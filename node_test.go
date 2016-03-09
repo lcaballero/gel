@@ -9,6 +9,45 @@ import (
 
 func TestGel(t *testing.T) {
 
+	Convey(`A new fragment with text and divs should properly render`, t, func() {
+		fr := Frag(
+			Div.New(
+				Text("Here"),
+				Div.Text("See"),
+			),
+			Div.New(
+				Text("Freedom"),
+			),
+			Text("All"),
+		)
+		actual := fr.String()
+		So(actual, ShouldEqual, `<div>Here<div>See</div></div><div>Freedom</div>All`)
+	})
+
+	Convey(`Add should silently ignore Atts for non-element Nodes`, t, func() {
+		txt := Text("Hello, World!")
+		txt.Add(Att("id", "my-id"))
+		So(txt.Atts, ShouldBeNil)
+
+		frag := Frag(Att("href", "/"))
+		So(frag.Atts, ShouldBeNil)
+
+		atts := Att("src", "favicon.ico").Add(Att("id", "id-1"))
+		So(atts.Atts, ShouldBeNil)
+	})
+
+	Convey(`When using Tag.Text and adding strings to a Node they will be appended as text nodes`, t, func() {
+		d := Div.Text("Hello,", " World")
+		html := d.String()
+		So(html, ShouldEqual, "<div>Hello, World</div>")
+	})
+
+	Convey(`Adding strings to a Node will append text nodes`, t, func() {
+		d := Div.New().Text("Hello,", " World")
+		html := d.String()
+		So(html, ShouldEqual, "<div>Hello, World</div>")
+	})
+
 	Convey(`empty tags shouldn't include whitespace when render with indent`, t, func() {
 		buf := bytes.NewBuffer([]byte{})
 		Div.New().WriteToIndented(NewIndent().Incr(), buf)
@@ -44,7 +83,19 @@ func TestGel(t *testing.T) {
 		So(actual, ShouldEqual, expected)
 	})
 
-	Convey(`An AAttribute node should html attribute pairs`, t, func() {
+	Convey(`A Fragment node should have propery fields set`, t, func() {
+		f := Frag()
+		So(f.String(), ShouldEqual, ``)
+		So(f.Type, ShouldEqual, Fragment)
+		So(f.Children, ShouldNotBeNil)
+		So(f.Atts, ShouldBeNil)
+		So(len(f.Children), ShouldEqual, 0)
+		So(f.Key, ShouldEqual, "")
+		So(f.Value, ShouldEqual, "")
+		So(f.CData, ShouldEqual, "")
+	})
+
+	Convey(`An Attribute node should html attribute pairs`, t, func() {
 		d := Att("class", "container")
 		So(d.String(), ShouldEqual, ` class="container"`)
 		So(d.Type, ShouldEqual, Attribute)

@@ -14,9 +14,11 @@ type View interface {
 // Nodes represent the different parts of of Html as one type.  A single Node
 // can be one and only one of the following types: Textual, Element, or
 // Attribute.  In general a Textual node will not have children, but will
-// have CData, Elements can have both children either of type Text or Element
-// and Attributes, but does not directly hold CData.  Attributes have only
-// Key and Value strings, and all other fields are empty or nil.
+// have CData, Elements can have both children of type Text, Element,
+// Attributes or Fragment, but cannot directly hold CData.  Attributes have
+// only Key and Value strings, and all other fields are empty or nil.  Lastly,
+// Fragments can have children of type Text and Element, while all other
+// fields are empty or nil.
 type Node struct {
 	Tag      Tag
 	Children []*Node
@@ -57,6 +59,10 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 		w.Write([]byte("=\""))
 		w.Write([]byte(e.Value))
 		w.Write([]byte("\""))
+	case Fragment:
+		for _,f := range e.Children {
+			f.WriteToIndented(in, w)
+		}
 	case Element:
 		if in.HasIndent() {
 			in.WriteTo(w)
@@ -108,7 +114,8 @@ func (e *Node) String() string {
 
 // Add will collect and bucket the nodes into atts and children.  Nodes
 // of type Text or Element are added to children and Attribute type are
-// added to the Atts slice.
+// added to the Atts slice.  If the Node is not an Element then
+// attributes will silently be ignored.
 func (t *Node) Add(nodes ...*Node) *Node {
 	for _, n := range nodes {
 		switch n.Type {
@@ -117,10 +124,20 @@ func (t *Node) Add(nodes ...*Node) *Node {
 		case Element:
 			t.Children = append(t.Children, n)
 		case Attribute:
-			t.Atts = append(t.Atts, n)
+			if t.Type == Element {
+				t.Atts = append(t.Atts, n)
+			}
 		}
 	}
 	return t
+}
+
+// Text adds the given strings as text nodes.
+func (n *Node) Text(ts ...string) *Node {
+	for _, c := range ts {
+		n.Add(Text(c))
+	}
+	return n
 }
 
 // Att creates a new Node with Attribute type and the given key, value pair.
@@ -142,6 +159,14 @@ func Text(c string) *Node {
 	return node
 }
 
+func Frag(children ...*Node) *Node {
+	n := &Node{
+		Type: Fragment,
+		Children: make([]*Node, 0),
+	}
+	return n.Add(children...)
+}
+
 // New allocates a Node with the provided 0 or more children and the lower-case
 // name of the Tag.
 func (t Tag) New(children ...*Node) *Node {
@@ -155,8 +180,21 @@ func (t Tag) New(children ...*Node) *Node {
 	return node
 }
 
+// Text will create an Element Node from the Tag and then immediately add the
+// given strings as Text nodes.
+func (t Tag) Text(c ...string) *Node {
+	e := t.New()
+	for _,txt := range c {
+		e.Add(Text(txt))
+	}
+	return e
+}
+
 // Add allocates a Node with the given Tag name (lower-cased) and the provided
 // children.  This is an alias to tag.New(...).
 func (t Tag) Add(children ...*Node) *Node {
 	return t.New().Add(children...)
 }
+
+
+
