@@ -34,6 +34,12 @@ func (n Indent) String() string {
 	return buf.String()
 }
 
+// HasIndent returns true if the Inc is > 0 and Tab != ''.
+func (n Indent) HasIndent() bool {
+	noIndent := n.Inc == 0 && n.Tab == ""
+	return !noIndent
+}
+
 // WriteTo outputs the Indent to the Writer.
 func (n Indent) WriteTo(w io.Writer) {
 	for i := 0; i < n.Level; i++ {
