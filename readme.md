@@ -4,6 +4,27 @@
 
 `gel` is a lib for programmatically producing Html.
 
+# Why?  What in the...F?
+
+Let's just say sometimes you don't want to deal with template engines.
+You don't want a build system that transpiles one language into another,
+just for the sake of brevity... not to mention you have to learn the
+language and nuance of that new language or templating thing.  You
+have to `npm install` 42 things, and then `bower install` something
+else, or `grunt` this or that, or `gem` this or that, or get some
+`pip`, or wget a shell script you won't vet before running, which
+install who knows what.
+
+But why?  Why?  You just need to generate a byte stream (hell a string).
+
+And you need to loop or inject your data into that string, and the final
+look and feel of that string is html-ish.  Well, this lib can do that
+from inside of Go, and without some templating engine.
+
+Is it a silver bullet -- nope.  Never said it was.  It's just one of
+a million ways of rendering text.
+
+
 ## Usage
 
 ```go
