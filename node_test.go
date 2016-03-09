@@ -9,6 +9,18 @@ import (
 
 func TestGel(t *testing.T) {
 
+	Convey(`empty tags shouldn't include whitespace when render with indent`, t, func() {
+		buf := bytes.NewBuffer([]byte{})
+		Div.New().WriteToIndented(NewIndent().Incr(), buf)
+		So(buf.String(), ShouldEqual, "  <div></div>\n")
+	})
+
+	Convey(`void tags should not have a closing tag`, t, func() {
+		buf := bytes.NewBuffer([]byte{})
+		Meta.New().WriteToIndented(NewIndent(), buf)
+		So(buf.String(), ShouldEqual, "<meta/>")
+	})
+
 	Convey(`div using Add(...) many atts should render as <div class="container" id="id-1">text</div>`, t, func() {
 		s := Div.Add(
 			Att("class", "container"),
@@ -62,7 +74,7 @@ func TestGel(t *testing.T) {
 		s := Text("text")
 		So(s.String(), ShouldEqual, `text`)
 		So(s.CData, ShouldEqual, `text`)
-		So(s.Tag, ShouldEqual, "")
+		So(s.Tag, ShouldEqual, 0)
 		So(s.Children, ShouldBeNil)
 		So(s.Atts, ShouldBeNil)
 		So(s.Type, ShouldEqual, Textual)

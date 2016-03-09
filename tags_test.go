@@ -15,16 +15,16 @@ func TestTags(t *testing.T) {
 
 	Convey("IsVoidTag should return false for NormalTags", t, func() {
 		for _,v := range NormalTags {
-			So(IsSelfClosing(v), ShouldBeFalse)
+			So(v.IsSelfClosing(), ShouldBeFalse)
 		}
 	})
 
 	Convey("IsVoidTag should return true for VoidTags", t, func() {
 		for _,v := range VoidTags {
-			if !IsSelfClosing(v) {
+			if !v.IsSelfClosing() {
 				fmt.Println(v.String())
 			}
-			So(IsSelfClosing(v), ShouldBeTrue)
+			So(v.IsSelfClosing(), ShouldBeTrue)
 		}
 	})
 

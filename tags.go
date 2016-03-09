@@ -152,7 +152,7 @@ var VoidTags = []Tag{
 var voidSet map[Tag]struct{} = nil
 
 // IsSelfClosing returns true if the given tag is self closing.
-func IsSelfClosing(tag Tag) bool {
+func (tag Tag) IsSelfClosing() bool {
 	_,ok := voidSet[tag]
 	return ok
 }
