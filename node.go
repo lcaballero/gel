@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+type View interface {
+	ToNode() *Node
+}
+
 // Nodes represent the different parts of of Html as one type.  A single Node
 // can be one and only one of the following types: Textual, Element, or
 // Attribute.  In general a Textual node will not have children, but will
@@ -14,7 +18,7 @@ import (
 // and Attributes, but does not directly hold CData.  Attributes have only
 // Key and Value strings, and all other fields are empty or nil.
 type Node struct {
-	Tag      string
+	Tag      Tag
 	Children []*Node
 	Atts     []*Node
 	Type     Type
@@ -27,6 +31,13 @@ type Node struct {
 // attributes.
 func (e *Node) WriteTo(w io.Writer) {
 	e.WriteToIndented(Indent{Level: 0}, w)
+}
+
+// ToNode is implemented to conform to a component pattern of Nodes within
+// Nodes, but additionally some other instance can pose as a View if they
+// implement ToNode.
+func (e *Node) ToNode() *Node {
+	return e
 }
 
 // WriteTo writes the Node to the given writer with the given indention.
@@ -51,30 +62,37 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 			in.WriteTo(w)
 		}
 		w.Write([]byte("<"))
-		w.Write([]byte(e.Tag))
+		tag := strings.ToLower(e.Tag.String())
+		w.Write([]byte(tag))
 		if len(e.Atts) > 0 {
 			for _, att := range e.Atts {
 				att.WriteTo(w)
 			}
 		}
-		w.Write([]byte(">"))
-		if len(e.Children) > 0 {
-			if in.HasIndent() {
-				w.Write([]byte("\n"))
-			}
-			next := in.Incr()
-			for _, kid := range e.Children {
-				if next.HasIndent() {
-					kid.WriteToIndented(next, w)
-				} else {
-					kid.WriteTo(w)
+		if e.Tag.IsSelfClosing() {
+			w.Write([]byte("/>"))
+		} else {
+			w.Write([]byte(">"))
+			if len(e.Children) > 0 {
+				if in.HasIndent() {
+					w.Write([]byte("\n"))
+				}
+				next := in.Incr()
+				for _, kid := range e.Children {
+					if next.HasIndent() {
+						kid.WriteToIndented(next, w)
+					} else {
+						kid.WriteTo(w)
+					}
 				}
 			}
 		}
-		if in.HasIndent() {
+		if in.HasIndent() && len(e.Children) > 0 && !e.Tag.IsSelfClosing() {
 			in.WriteTo(w)
 		}
-		w.Write([]byte(fmt.Sprintf("</%s>", e.Tag)))
+		if !e.Tag.IsSelfClosing() {
+			w.Write([]byte(fmt.Sprintf("</%s>", tag)))
+		}
 		if in.Level > 0 {
 			w.Write([]byte("\n"))
 		}
@@ -129,7 +147,7 @@ func Text(c string) *Node {
 func (t Tag) New(children ...*Node) *Node {
 	node := &Node{
 		Type: Element,
-		Tag:  strings.ToLower(t.String()),
+		Tag:  t,
 		Children: make([]*Node, 0),
 		Atts: make([]*Node, 0),
 	}
