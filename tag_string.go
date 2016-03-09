@@ -4,9 +4,9 @@ package gel
 
 import "fmt"
 
-const _Tag_name = "AAbbrAddressArticleAsideAudioBBdiBdoBlockquoteBodyButtonCanvasCaptionCiteCodeColgroupDataDatalistDdDelDfnDivDlDtEmFieldsetFigcaptionFigureFooterFormh1h6HeadHeaderHtmlIIframeInsKbdLabelLegendLiMainMapMarkMeterNavNoscriptObjectOlOptgroupOptionOutputPPreProgressQRbRpRtRtcRubySSampScriptSectionSelectSmallSpanStrongStyleSubSupTableTbodyTdTemplateTextareaTfootThTheadTimeTitleTrUUlVarVideoAreaBaseBrColEmbedHrImgInputKeygenLinkMetaParamSourceTrackWbr"
+const _Tag_name = "AAbbrAddressArticleAsideAudioBBdiBdoBlockquoteBodyButtonCanvasCaptionCiteCodeColgroupDataDatalistDdDelDfnDivDlDtEmFieldsetFigcaptionFigureFooterFormH1H2H3H4H5H6HeadHeaderHtmlIIframeInsKbdLabelLegendLiMainMapMarkMeterNavNoscriptObjectOlOptgroupOptionOutputPPreProgressQRbRpRtRtcRubySSampScriptSectionSelectSmallSpanStrongStyleSubSupTableTbodyTdTemplateTextareaTfootThTheadTimeTitleTrUUlVarVideoAreaBaseBrColEmbedHrImgInputKeygenLinkMetaParamSourceTrackWbr"
 
-var _Tag_index = [...]uint16{0, 1, 5, 12, 19, 24, 29, 30, 33, 36, 46, 50, 56, 62, 69, 73, 77, 85, 89, 97, 99, 102, 105, 108, 110, 112, 114, 122, 132, 138, 144, 148, 150, 152, 156, 162, 166, 167, 173, 176, 179, 184, 190, 192, 196, 199, 203, 208, 211, 219, 225, 227, 235, 241, 247, 248, 251, 259, 260, 262, 264, 266, 269, 273, 274, 278, 284, 291, 297, 302, 306, 312, 317, 320, 323, 328, 333, 335, 343, 351, 356, 358, 363, 367, 372, 374, 375, 377, 380, 385, 389, 393, 395, 398, 403, 405, 408, 413, 419, 423, 427, 432, 438, 443, 446}
+var _Tag_index = [...]uint16{0, 1, 5, 12, 19, 24, 29, 30, 33, 36, 46, 50, 56, 62, 69, 73, 77, 85, 89, 97, 99, 102, 105, 108, 110, 112, 114, 122, 132, 138, 144, 148, 150, 152, 154, 156, 158, 160, 164, 170, 174, 175, 181, 184, 187, 192, 198, 200, 204, 207, 211, 216, 219, 227, 233, 235, 243, 249, 255, 256, 259, 267, 268, 270, 272, 274, 277, 281, 282, 286, 292, 299, 305, 310, 314, 320, 325, 328, 331, 336, 341, 343, 351, 359, 364, 366, 371, 375, 380, 382, 383, 385, 388, 393, 397, 401, 403, 406, 411, 413, 416, 421, 427, 431, 435, 440, 446, 451, 454}
 
 func (i Tag) String() string {
 	i -= 1

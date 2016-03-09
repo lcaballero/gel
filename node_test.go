@@ -8,6 +8,32 @@ import (
 
 func TestGel(t *testing.T) {
 
+	Convey(`An AAttribute node should html attribute pairs`, t, func() {
+		d := Att("class", "container")
+		So(d.String(), ShouldEqual, ` class="container"`)
+		So(d.Type, ShouldEqual, Attribute)
+		So(d.Children, ShouldBeNil)
+		So(d.Atts, ShouldBeNil)
+		So(len(d.Children), ShouldEqual, 0)
+		So(len(d.Atts), ShouldEqual, 0)
+		So(d.Key, ShouldEqual, "class")
+		So(d.Value, ShouldEqual, "container")
+		So(d.CData, ShouldEqual, "")
+	})
+
+	Convey(`An Element node should only produce html tags`, t, func() {
+		d := Div.New()
+		So(d.String(), ShouldEqual, "<div></div>")
+		So(d.Type, ShouldEqual, Element)
+		So(d.Children, ShouldNotBeNil)
+		So(d.Atts, ShouldNotBeNil)
+		So(len(d.Children), ShouldEqual, 0)
+		So(len(d.Atts), ShouldEqual, 0)
+		So(d.Key, ShouldEqual, "")
+		So(d.Value, ShouldEqual, "")
+		So(d.CData, ShouldEqual, "")
+	})
+
 	Convey(`A Text node should produce only it's given text.`, t, func() {
 		s := Text("text")
 		So(s.String(), ShouldEqual, `text`)
@@ -15,6 +41,9 @@ func TestGel(t *testing.T) {
 		So(s.Tag, ShouldEqual, "")
 		So(s.Children, ShouldBeNil)
 		So(s.Atts, ShouldBeNil)
+		So(s.Type, ShouldEqual, Textual)
+		So(s.Key, ShouldEqual, "")
+		So(s.Value, ShouldEqual, "")
 	})
 
 	Convey(`div using Add(...) many atts should render as <div class="container" id="id-1">text</div>`, t, func() {
