@@ -4,9 +4,33 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"bytes"
 )
 
 func TestGel(t *testing.T) {
+
+	Convey(`div using Add(...) many atts should render as <div class="container" id="id-1">text</div>`, t, func() {
+		s := Div.Add(
+			Att("class", "container"),
+			Att("id", "id-1"),
+			Text("text"),
+		).Add(
+			Div.New(
+				Att("class", "row"),
+				Text("Hello, World!"),
+			),
+		)
+		expected := `<div class="container" id="id-1">
+  text
+  <div class="row">
+    Hello, World!
+  </div>
+</div>`
+		buf := bytes.NewBuffer([]byte{})
+		s.WriteToIndented(NewIndent(), buf)
+		actual := buf.String()
+		So(actual, ShouldEqual, expected)
+	})
 
 	Convey(`An AAttribute node should html attribute pairs`, t, func() {
 		d := Att("class", "container")

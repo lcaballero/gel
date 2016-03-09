@@ -33,7 +33,13 @@ func (e *Node) WriteTo(w io.Writer) {
 func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 	switch e.Type {
 	case Textual:
+		if in.HasIndent() {
+			in.WriteTo(w)
+		}
 		w.Write([]byte(e.CData))
+		if in.HasIndent() {
+			w.Write([]byte("\n"))
+		}
 	case Attribute:
 		w.Write([]byte(" "))
 		w.Write([]byte(e.Key))
@@ -41,6 +47,9 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 		w.Write([]byte(e.Value))
 		w.Write([]byte("\""))
 	case Element:
+		if in.HasIndent() {
+			in.WriteTo(w)
+		}
 		w.Write([]byte("<"))
 		w.Write([]byte(e.Tag))
 		if len(e.Atts) > 0 {
@@ -50,11 +59,25 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 		}
 		w.Write([]byte(">"))
 		if len(e.Children) > 0 {
+			if in.HasIndent() {
+				w.Write([]byte("\n"))
+			}
+			next := in.Incr()
 			for _, kid := range e.Children {
-				kid.WriteTo(w)
+				if next.HasIndent() {
+					kid.WriteToIndented(next, w)
+				} else {
+					kid.WriteTo(w)
+				}
 			}
 		}
+		if in.HasIndent() {
+			in.WriteTo(w)
+		}
 		w.Write([]byte(fmt.Sprintf("</%s>", e.Tag)))
+		if in.Level > 0 {
+			w.Write([]byte("\n"))
+		}
 	}
 }
 
