@@ -1,6 +1,8 @@
+[![Build Status](https://travis-ci.org/lcaballero/gel.svg?branch=master)](https://travis-ci.org/lcaballero/gel)
+
 # Introduction
 
-`gel` is lib for programmatically producing Html.
+`gel` is a lib for programmatically producing Html.
 
 ## Usage
 
