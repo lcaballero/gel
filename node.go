@@ -46,11 +46,13 @@ func (e *Node) ToNode() *Node {
 func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 	switch e.Type {
 	case Textual:
-		if in.HasIndent() {
+		if in.HasIndent() && e.CData != "" {
 			in.WriteTo(w)
 		}
-		w.Write([]byte(e.CData))
-		if in.HasIndent() {
+		if e.CData != "" {
+			w.Write([]byte(e.CData))
+		}
+		if in.HasIndent() && e.CData != "" {
 			w.Write([]byte("\n"))
 		}
 	case Attribute:
@@ -85,15 +87,11 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 				}
 				next := in.Incr()
 				for _, kid := range e.Children {
-					if next.HasIndent() {
-						kid.WriteToIndented(next, w)
-					} else {
-						kid.WriteTo(w)
-					}
+					kid.WriteToIndented(next, w)
 				}
 			}
 		}
-		if in.HasIndent() && len(e.Children) > 0 && !e.Tag.IsSelfClosing() {
+		if in.Level > 0 && in.HasIndent() && len(e.Children) > 0 {
 			in.WriteTo(w)
 		}
 		if !e.Tag.IsSelfClosing() {
@@ -119,9 +117,7 @@ func (e *Node) String() string {
 func (t *Node) Add(nodes ...*Node) *Node {
 	for _, n := range nodes {
 		switch n.Type {
-		case Textual:
-			t.Children = append(t.Children, n)
-		case Element:
+		case Textual, Element, Fragment:
 			t.Children = append(t.Children, n)
 		case Attribute:
 			if t.Type == Element {
@@ -167,6 +163,11 @@ func Frag(children ...*Node) *Node {
 	return n.Add(children...)
 }
 
+func None() *Node {
+	return Text("")
+
+}
+
 // New allocates a Node with the provided 0 or more children and the lower-case
 // name of the Tag.
 func (t Tag) New(children ...*Node) *Node {
@@ -193,7 +194,7 @@ func (t Tag) Text(c ...string) *Node {
 // Add allocates a Node with the given Tag name (lower-cased) and the provided
 // children.  This is an alias to tag.New(...).
 func (t Tag) Add(children ...*Node) *Node {
-	return t.New().Add(children...)
+	return t.New(children...)
 }
 
 

@@ -9,6 +9,33 @@ import (
 
 func TestGel(t *testing.T) {
 
+	Convey(`A None node should be an empty Text *Node`, t, func() {
+		none := None()
+		So(none.Atts, ShouldBeNil)
+		So(none.CData, ShouldBeEmpty)
+		So(none.Children, ShouldBeEmpty)
+		So(none.Key, ShouldBeEmpty)
+		So(none.Value, ShouldBeEmpty)
+		So(none.Tag, ShouldEqual, 0)
+		So(none.Type, ShouldEqual, Textual)
+		So(none.String(), ShouldBeEmpty)
+	})
+
+	Convey(`empty text should NOT be added to a div which is already (especially with indented)`, t, func() {
+		fr := Frag(
+			Div.New(
+				Div.New(
+					Text("2nd level"),
+				),
+				Div.New(
+					Text(""), // <= should not be preceded by indention
+				),
+			),
+		)
+		html := fr.String()
+		So(html, ShouldEqual, `<div><div>2nd level</div><div></div></div>`)
+	})
+
 	Convey(`A new fragment with text and divs should properly render`, t, func() {
 		fr := Frag(
 			Div.New(
