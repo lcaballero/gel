@@ -36,11 +36,7 @@ import (
 )  
 
 func main() {
-  el := Div.Add(
-    Att("class", "container"),
-    Att("id", "id-1"),
-    Text("text"),
-  )
+  el := Div.Atts(class", "container", id", "id-1").Text("text")
   html := el.String() // <div class="container", id="id-1">text</div>
   fmt.Println(html)  
 }
@@ -48,6 +44,7 @@ func main() {
 ```
 
 ## TODO:
+1. Need more examples... possibly even Go examples.
 1. Add a Class(s string) top-level function and Tag member.
 1. Convert Tags to functions where by they return the `*Node` such that
    there's no longer a need for the Add(...) or New(...) methods.
