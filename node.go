@@ -6,35 +6,6 @@ import (
 	"io"
 )
 
-// Viewable is the interface for anything that can be rendered into a View.
-type Viewable interface {
-	ToView() View
-}
-
-// ToView is the functional equivalent of Viewable, which allows an
-// empty function returning a View to be a Viewable.
-type ToView func() View
-
-// ToView method implments the Viewable interface for the ToView func.
-func (v ToView) ToView() View {
-	return v()
-}
-
-// View interface represents anything that can be turned into a Node via the
-// ToNode() function.
-type View interface {
-	ToNode() *Node
-}
-
-// ToNode is an empty function that returns a rendered/completed Node.
-type ToNode func() *Node
-
-// ToNode here implements the View interface, meaning that a ToNode function
-// can now be used like a View.
-func (t ToNode) ToNode() *Node {
-	return t()
-}
-
 // Nodes represent the different parts of of Html as one type.  A single Node
 // can be one and only one of the following types: Textual, Element, or
 // Attribute.  In general a Textual node will not have children, but will
@@ -138,22 +109,24 @@ func (e *Node) String() string {
 // of type Text or Element are added to children and Attribute type are
 // added to the Atts slice.  If the Node is not an Element then
 // attributes will silently be ignored.
-func (t *Node) Add(nodes ...*Node) *Node {
-	for _, n := range nodes {
+func (v *Node) Add(nodes ...View) View {
+	node := v.ToNode()
+	for _, view := range nodes {
+		n := view.ToNode()
 		switch n.Type {
 		case Textual, Element, Fragment:
-			t.Children = append(t.Children, n)
+			node.Children = append(node.Children, n)
 		case Attribute:
-			if t.Type == Element {
-				t.Atts = append(t.Atts, n)
+			if node.Type == Element {
+				node.Atts = append(node.Atts, n)
 			}
 		}
 	}
-	return t
+	return node
 }
 
 // Text adds the given strings as text nodes.
-func (n *Node) Text(ts ...string) *Node {
+func (n *Node) Text(ts ...string) View {
 	for _, c := range ts {
 		n.Add(Text(c))
 	}
@@ -161,7 +134,7 @@ func (n *Node) Text(ts ...string) *Node {
 }
 
 // Att creates a new Node with Attribute type and the given key, value pair.
-func Att(key, value string) *Node {
+func Att(key, value string) View {
 	node := &Node{
 		Type:  Attribute,
 		Key:   key,
@@ -171,7 +144,7 @@ func Att(key, value string) *Node {
 }
 
 // Text creates a new Node with Textual type and CData from the provided string.
-func Text(c string) *Node {
+func Text(c string) View {
 	node := &Node{
 		Type:  Textual,
 		CData: c,
@@ -180,12 +153,14 @@ func Text(c string) *Node {
 }
 
 // Fmt creates a Text node using Sprintf.
-func Fmt(format string, args ...interface{}) *Node {
+func Fmt(format string, args ...interface{}) View {
 	s := fmt.Sprintf(format, args...)
 	return Text(s)
 }
 
-func Frag(children ...*Node) *Node {
+// Frag creates a view that is a list of children views without a containing
+// element.
+func Frag(children ...View) View {
 	n := &Node{
 		Type: Fragment,
 		Children: make([]*Node, 0),
@@ -194,7 +169,7 @@ func Frag(children ...*Node) *Node {
 }
 
 // None produces an empty Text Node.
-func None() *Node {
+func None() View {
 	return Text("")
 }
 
@@ -216,3 +191,21 @@ func Maybe(val interface{}) View {
 	return None()
 }
 
+// Default takes two values, should the first be unconvertible to a Viewable
+// or a view it will then attempt to convert the second.  Nil is not convertible
+// so in cases where the first is nil, the second will be used if possible.
+// Should they both be nil the View will be of an empty Text node.
+func Default(val interface{}, def interface{}) View {
+	if val == nil {
+		return None()
+	}
+	viewable, ok := val.(Viewable)
+	if ok {
+		return viewable.ToView()
+	}
+	view, ok := val.(View)
+	if ok {
+		return view
+	}
+	return Maybe(def)
+}
