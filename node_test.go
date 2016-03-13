@@ -9,6 +9,26 @@ import (
 
 func TestGel(t *testing.T) {
 
+	Convey(`A Views list should properly render to html like any fragment`, t, func() {
+		v := NewFragment()
+		v.Add(
+			Div.Text("a"),
+			Div.Text("b"),
+			Div.Text("c"),
+		)
+		s := v.ToNode().String()
+		So(s, ShouldEqual, `<div>a</div><div>b</div><div>c</div>`)
+	})
+
+	Convey(`Adding to a Views list should increase it's length`, t, func() {
+		v := NewFragment()
+		So(v.Len(), ShouldEqual, 0)
+		v.Add(
+			Div.Text("a"),
+		)
+		So(v.Len(), ShouldEqual, 1)
+	})
+
 	Convey(`A None node should be an empty Text *Node`, t, func() {
 		none := None().ToNode()
 		So(none.Atts, ShouldBeNil)
@@ -112,7 +132,7 @@ func TestGel(t *testing.T) {
 	Convey(`A Fragment node should have propery fields set`, t, func() {
 		f := Frag().ToNode()
 		So(f.String(), ShouldEqual, ``)
-		So(f.Type, ShouldEqual, Fragment)
+		So(f.Type, ShouldEqual, NodeList)
 		So(f.Children, ShouldNotBeNil)
 		So(f.Atts, ShouldBeNil)
 		So(len(f.Children), ShouldEqual, 0)

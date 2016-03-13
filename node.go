@@ -57,7 +57,7 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 		w.Write([]byte("=\""))
 		w.Write([]byte(e.Value))
 		w.Write([]byte("\""))
-	case Fragment:
+	case NodeList:
 		for _,f := range e.Children {
 			f.WriteToIndented(in, w)
 		}
@@ -114,7 +114,7 @@ func (v *Node) Add(nodes ...View) View {
 	for _, view := range nodes {
 		n := view.ToNode()
 		switch n.Type {
-		case Textual, Element, Fragment:
+		case Textual, Element, NodeList:
 			node.Children = append(node.Children, n)
 		case Attribute:
 			if node.Type == Element {
@@ -162,7 +162,7 @@ func Fmt(format string, args ...interface{}) View {
 // element.
 func Frag(children ...View) View {
 	n := &Node{
-		Type: Fragment,
+		Type: NodeList,
 		Children: make([]*Node, 0),
 	}
 	return n.Add(children...)
