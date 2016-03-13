@@ -26,14 +26,3 @@ func (t Tag) Text(c ...string) *Node {
 	}
 	return e
 }
-
-// Add allocates a Node with the given Tag name (lower-cased) and the provided
-// children.  This is an alias to tag.New(...).
-func (t Tag) Add(children ...*Node) *Node {
-	return t(children...)
-}
-
-
-
-
-

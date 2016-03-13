@@ -121,18 +121,3 @@ var (
   {{ range .void }}{{ . }} = el("{{ . | lower }}", true)
   {{ end }}
 )
-
-var AllTags = []string{
-  // Normal tags
-  {{ range .normal }}"{{ . | lower }}",{{ end }}
-  // Void tags
-  {{ range .void }}"{{ . | lower }}",{{ end }}
-}
-
-var NormalTags = []string{
-  {{ range .normal }}"{{ . | lower }}",{{ end }}
-}
-
-var VoidTags = []string{
-  {{ range .void }}"{{ . | lower }}",{{ end }}
-}
