@@ -4,11 +4,35 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"strings"
 )
 
+// Viewable is the interface for anything that can be rendered into a View.
+type Viewable interface {
+	ToView() View
+}
+
+// ToView is the functional equivalent of Viewable, which allows an
+// empty function returning a View to be a Viewable.
+type ToView func() View
+
+// ToView method implments the Viewable interface for the ToView func.
+func (v ToView) ToView() View {
+	return v()
+}
+
+// View interface represents anything that can be turned into a Node via the
+// ToNode() function.
 type View interface {
 	ToNode() *Node
+}
+
+// ToNode is an empty function that returns a rendered/completed Node.
+type ToNode func() *Node
+
+// ToNode here implements the View interface, meaning that a ToNode function
+// can now be used like a View.
+func (t ToNode) ToNode() *Node {
+	return t()
 }
 
 // Nodes represent the different parts of of Html as one type.  A single Node
@@ -20,19 +44,20 @@ type View interface {
 // Fragments can have children of type Text and Element, while all other
 // fields are empty or nil.
 type Node struct {
-	Tag      Tag
+	Tag      string
 	Children []*Node
 	Atts     []*Node
 	Type     Type
 	Key      string
 	Value    string
 	CData    string
+	IsVoid   bool
 }
 
 // WriteTo will output the Node to the writer correctly nesting children and
 // attributes.
 func (e *Node) WriteTo(w io.Writer) {
-	e.WriteToIndented(Indent{Level: 0}, w)
+	e.WriteToIndented(Indent{}, w)
 }
 
 // ToNode is implemented to conform to a component pattern of Nodes within
@@ -70,14 +95,13 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 			in.WriteTo(w)
 		}
 		w.Write([]byte("<"))
-		tag := strings.ToLower(e.Tag.String())
-		w.Write([]byte(tag))
+		w.Write([]byte(e.Tag))
 		if len(e.Atts) > 0 {
 			for _, att := range e.Atts {
 				att.WriteTo(w)
 			}
 		}
-		if e.Tag.IsSelfClosing() {
+		if e.IsVoid {
 			w.Write([]byte("/>"))
 		} else {
 			w.Write([]byte(">"))
@@ -94,8 +118,8 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 		if in.Level > 0 && in.HasIndent() && len(e.Children) > 0 {
 			in.WriteTo(w)
 		}
-		if !e.Tag.IsSelfClosing() {
-			w.Write([]byte(fmt.Sprintf("</%s>", tag)))
+		if !e.IsVoid {
+			w.Write([]byte(fmt.Sprintf("</%s>", e.Tag)))
 		}
 		if in.Level > 0 {
 			w.Write([]byte("\n"))
@@ -155,6 +179,12 @@ func Text(c string) *Node {
 	return node
 }
 
+// Fmt creates a Text node using Sprintf.
+func Fmt(format string, args ...interface{}) *Node {
+	s := fmt.Sprintf(format, args...)
+	return Text(s)
+}
+
 func Frag(children ...*Node) *Node {
 	n := &Node{
 		Type: Fragment,
@@ -163,39 +193,26 @@ func Frag(children ...*Node) *Node {
 	return n.Add(children...)
 }
 
+// None produces an empty Text Node.
 func None() *Node {
 	return Text("")
-
 }
 
-// New allocates a Node with the provided 0 or more children and the lower-case
-// name of the Tag.
-func (t Tag) New(children ...*Node) *Node {
-	node := &Node{
-		Type: Element,
-		Tag:  t,
-		Children: make([]*Node, 0),
-		Atts: make([]*Node, 0),
+// Maybe check if val is nil, a view or a viewable, and if so returns
+// a View based on the val, but if it's none of these then it returns
+// an empty Text node.
+func Maybe(val interface{}) View {
+	if val == nil {
+		return None()
 	}
-	node.Add(children...)
-	return node
-}
-
-// Text will create an Element Node from the Tag and then immediately add the
-// given strings as Text nodes.
-func (t Tag) Text(c ...string) *Node {
-	e := t.New()
-	for _,txt := range c {
-		e.Add(Text(txt))
+	viewable, ok := val.(Viewable)
+	if ok {
+		return viewable.ToView()
 	}
-	return e
+	view, ok := val.(View)
+	if ok {
+		return view
+	}
+	return None()
 }
-
-// Add allocates a Node with the given Tag name (lower-cased) and the provided
-// children.  This is an alias to tag.New(...).
-func (t Tag) Add(children ...*Node) *Node {
-	return t.New(children...)
-}
-
-
 

@@ -16,18 +16,18 @@ func TestGel(t *testing.T) {
 		So(none.Children, ShouldBeEmpty)
 		So(none.Key, ShouldBeEmpty)
 		So(none.Value, ShouldBeEmpty)
-		So(none.Tag, ShouldEqual, 0)
+		So(none.Tag, ShouldEqual, "")
 		So(none.Type, ShouldEqual, Textual)
 		So(none.String(), ShouldBeEmpty)
 	})
 
 	Convey(`empty text should NOT be added to a div which is already (especially with indented)`, t, func() {
 		fr := Frag(
-			Div.New(
-				Div.New(
+			Div(
+				Div(
 					Text("2nd level"),
 				),
-				Div.New(
+				Div(
 					Text(""), // <= should not be preceded by indention
 				),
 			),
@@ -38,11 +38,11 @@ func TestGel(t *testing.T) {
 
 	Convey(`A new fragment with text and divs should properly render`, t, func() {
 		fr := Frag(
-			Div.New(
+			Div(
 				Text("Here"),
 				Div.Text("See"),
 			),
-			Div.New(
+			Div(
 				Text("Freedom"),
 			),
 			Text("All"),
@@ -70,20 +70,20 @@ func TestGel(t *testing.T) {
 	})
 
 	Convey(`Adding strings to a Node will append text nodes`, t, func() {
-		d := Div.New().Text("Hello,", " World")
+		d := Div.Text("Hello,", " World")
 		html := d.String()
 		So(html, ShouldEqual, "<div>Hello, World</div>")
 	})
 
 	Convey(`empty tags shouldn't include whitespace when render with indent`, t, func() {
 		buf := bytes.NewBuffer([]byte{})
-		Div.New().WriteToIndented(NewIndent().Incr(), buf)
+		Div().WriteToIndented(NewIndent().Incr(), buf)
 		So(buf.String(), ShouldEqual, "  <div></div>\n")
 	})
 
 	Convey(`void tags should not have a closing tag`, t, func() {
 		buf := bytes.NewBuffer([]byte{})
-		Meta.New().WriteToIndented(NewIndent(), buf)
+		Meta().WriteToIndented(NewIndent(), buf)
 		So(buf.String(), ShouldEqual, "<meta/>")
 	})
 
@@ -93,7 +93,7 @@ func TestGel(t *testing.T) {
 			Att("id", "id-1"),
 			Text("text"),
 		).Add(
-			Div.New(
+			Div(
 				Att("class", "row"),
 				Text("Hello, World!"),
 			),
@@ -136,7 +136,7 @@ func TestGel(t *testing.T) {
 	})
 
 	Convey(`An Element node should only produce html tags`, t, func() {
-		d := Div.New()
+		d := Div()
 		So(d.String(), ShouldEqual, "<div></div>")
 		So(d.Type, ShouldEqual, Element)
 		So(d.Children, ShouldNotBeNil)
@@ -152,7 +152,7 @@ func TestGel(t *testing.T) {
 		s := Text("text")
 		So(s.String(), ShouldEqual, `text`)
 		So(s.CData, ShouldEqual, `text`)
-		So(s.Tag, ShouldEqual, 0)
+		So(s.Tag, ShouldEqual, "")
 		So(s.Children, ShouldBeNil)
 		So(s.Atts, ShouldBeNil)
 		So(s.Type, ShouldEqual, Textual)
@@ -161,7 +161,7 @@ func TestGel(t *testing.T) {
 	})
 
 	Convey(`div using Add(...) many atts should render as <div class="container" id="id-1">text</div>`, t, func() {
-		s := Div.Add(
+		s := Div(
 			Att("class", "container"),
 			Att("id", "id-1"),
 			Text("text"),
@@ -175,37 +175,37 @@ func TestGel(t *testing.T) {
 	})
 
 	Convey(`div using New(...) should render as <div>text</div>`, t, func() {
-		s := Div.New().Add(Text("text")).String()
+		s := Div().Add(Text("text")).String()
 		So(s, ShouldEqual, `<div>text</div>`)
 	})
 
 	Convey(`div using New(...) should render as <div class="container">text</div>`, t, func() {
-		s := Div.New(Att("class", "container")).Add(Text("text")).String()
+		s := Div(Att("class", "container")).Add(Text("text")).String()
 		So(s, ShouldEqual, `<div class="container">text</div>`)
 	})
 
 	Convey(`div using New(...) should render as <div class="container"></div>`, t, func() {
-		s := Div.New(Att("class", "container")).String()
+		s := Div(Att("class", "container")).String()
 		So(s, ShouldEqual, `<div class="container"></div>`)
 	})
 
 	Convey("div using New(...) should render as <div><div></div></div>", t, func() {
-		s := Div.New(Div.New()).String()
+		s := Div(Div()).String()
 		So(s, ShouldEqual, "<div><div></div></div>")
 	})
 
 	Convey("div renders as <div><div></div></div>", t, func() {
-		s := Div.New().Add(Div.New()).String()
+		s := Div().Add(Div()).String()
 		So(s, ShouldEqual, "<div><div></div></div>")
 	})
 
 	Convey("div renders as <div></div>", t, func() {
-		s := Div.New().Add(Div.New()).String()
+		s := Div().Add(Div()).String()
 		So(s, ShouldEqual, "<div><div></div></div>")
 	})
 
 	Convey("div renders as <div></div>", t, func() {
-		s := Div.New().String()
+		s := Div().String()
 		So(s, ShouldEqual, "<div></div>")
 	})
 }
