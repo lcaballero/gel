@@ -47,6 +47,12 @@ func main() {
 
 ```
 
+## TODO:
+1. Add a Class(s string) top-level function and Tag member.
+1. Convert Tags to functions where by they return the `*Node` such that
+   there's no longer a need for the Add(...) or New(...) methods.
+1. Add an Atts (plural) top-level, Node member and Tag member that makes
+   an attribute list, which will be a new Type much like fragment.
 
 ## License
 

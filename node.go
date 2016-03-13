@@ -4,12 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"strings"
 )
-
-type View interface {
-	ToNode() *Node
-}
 
 // Nodes represent the different parts of of Html as one type.  A single Node
 // can be one and only one of the following types: Textual, Element, or
@@ -20,19 +15,20 @@ type View interface {
 // Fragments can have children of type Text and Element, while all other
 // fields are empty or nil.
 type Node struct {
-	Tag      Tag
+	Tag      string
 	Children []*Node
 	Atts     []*Node
 	Type     Type
 	Key      string
 	Value    string
 	CData    string
+	IsVoid   bool
 }
 
 // WriteTo will output the Node to the writer correctly nesting children and
 // attributes.
 func (e *Node) WriteTo(w io.Writer) {
-	e.WriteToIndented(Indent{Level: 0}, w)
+	e.WriteToIndented(Indent{}, w)
 }
 
 // ToNode is implemented to conform to a component pattern of Nodes within
@@ -70,14 +66,13 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 			in.WriteTo(w)
 		}
 		w.Write([]byte("<"))
-		tag := strings.ToLower(e.Tag.String())
-		w.Write([]byte(tag))
+		w.Write([]byte(e.Tag))
 		if len(e.Atts) > 0 {
 			for _, att := range e.Atts {
 				att.WriteTo(w)
 			}
 		}
-		if e.Tag.IsSelfClosing() {
+		if e.IsVoid {
 			w.Write([]byte("/>"))
 		} else {
 			w.Write([]byte(">"))
@@ -94,8 +89,8 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 		if in.Level > 0 && in.HasIndent() && len(e.Children) > 0 {
 			in.WriteTo(w)
 		}
-		if !e.Tag.IsSelfClosing() {
-			w.Write([]byte(fmt.Sprintf("</%s>", tag)))
+		if !e.IsVoid {
+			w.Write([]byte(fmt.Sprintf("</%s>", e.Tag)))
 		}
 		if in.Level > 0 {
 			w.Write([]byte("\n"))
@@ -114,22 +109,24 @@ func (e *Node) String() string {
 // of type Text or Element are added to children and Attribute type are
 // added to the Atts slice.  If the Node is not an Element then
 // attributes will silently be ignored.
-func (t *Node) Add(nodes ...*Node) *Node {
-	for _, n := range nodes {
+func (v *Node) Add(nodes ...View) View {
+	node := v.ToNode()
+	for _, view := range nodes {
+		n := view.ToNode()
 		switch n.Type {
 		case Textual, Element, Fragment:
-			t.Children = append(t.Children, n)
+			node.Children = append(node.Children, n)
 		case Attribute:
-			if t.Type == Element {
-				t.Atts = append(t.Atts, n)
+			if node.Type == Element {
+				node.Atts = append(node.Atts, n)
 			}
 		}
 	}
-	return t
+	return node
 }
 
 // Text adds the given strings as text nodes.
-func (n *Node) Text(ts ...string) *Node {
+func (n *Node) Text(ts ...string) View {
 	for _, c := range ts {
 		n.Add(Text(c))
 	}
@@ -137,7 +134,7 @@ func (n *Node) Text(ts ...string) *Node {
 }
 
 // Att creates a new Node with Attribute type and the given key, value pair.
-func Att(key, value string) *Node {
+func Att(key, value string) View {
 	node := &Node{
 		Type:  Attribute,
 		Key:   key,
@@ -147,7 +144,7 @@ func Att(key, value string) *Node {
 }
 
 // Text creates a new Node with Textual type and CData from the provided string.
-func Text(c string) *Node {
+func Text(c string) View {
 	node := &Node{
 		Type:  Textual,
 		CData: c,
@@ -155,7 +152,15 @@ func Text(c string) *Node {
 	return node
 }
 
-func Frag(children ...*Node) *Node {
+// Fmt creates a Text node using Sprintf.
+func Fmt(format string, args ...interface{}) View {
+	s := fmt.Sprintf(format, args...)
+	return Text(s)
+}
+
+// Frag creates a view that is a list of children views without a containing
+// element.
+func Frag(children ...View) View {
 	n := &Node{
 		Type: Fragment,
 		Children: make([]*Node, 0),
@@ -163,39 +168,44 @@ func Frag(children ...*Node) *Node {
 	return n.Add(children...)
 }
 
-func None() *Node {
+// None produces an empty Text Node.
+func None() View {
 	return Text("")
-
 }
 
-// New allocates a Node with the provided 0 or more children and the lower-case
-// name of the Tag.
-func (t Tag) New(children ...*Node) *Node {
-	node := &Node{
-		Type: Element,
-		Tag:  t,
-		Children: make([]*Node, 0),
-		Atts: make([]*Node, 0),
+// Maybe check if val is nil, a view or a viewable, and if so returns
+// a View based on the val, but if it's none of these then it returns
+// an empty Text node.
+func Maybe(val interface{}) View {
+	if val == nil {
+		return None()
 	}
-	node.Add(children...)
-	return node
-}
-
-// Text will create an Element Node from the Tag and then immediately add the
-// given strings as Text nodes.
-func (t Tag) Text(c ...string) *Node {
-	e := t.New()
-	for _,txt := range c {
-		e.Add(Text(txt))
+	viewable, ok := val.(Viewable)
+	if ok {
+		return viewable.ToView()
 	}
-	return e
+	view, ok := val.(View)
+	if ok {
+		return view
+	}
+	return None()
 }
 
-// Add allocates a Node with the given Tag name (lower-cased) and the provided
-// children.  This is an alias to tag.New(...).
-func (t Tag) Add(children ...*Node) *Node {
-	return t.New(children...)
+// Default takes two values, should the first be unconvertible to a Viewable
+// or a view it will then attempt to convert the second.  Nil is not convertible
+// so in cases where the first is nil, the second will be used if possible.
+// Should they both be nil the View will be of an empty Text node.
+func Default(val interface{}, def interface{}) View {
+	if val == nil {
+		return None()
+	}
+	viewable, ok := val.(Viewable)
+	if ok {
+		return viewable.ToView()
+	}
+	view, ok := val.(View)
+	if ok {
+		return view
+	}
+	return Maybe(def)
 }
-
-
-
