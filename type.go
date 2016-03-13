@@ -8,6 +8,6 @@ const (
 	Textual   Type = 1
 	Element   Type = 2
 	Attribute Type = 3
-	Fragment  Type = 4
+	NodeList  Type = 4
 )
 
