@@ -1,19 +1,31 @@
 package gel
 
 type Tag func(...View) View
+func (t Tag) ToNode() *Node {
+	return t().ToNode()
+}
 
 // el creates a Tag func for the given tag name and isVoid flag.
 func el(tag string, isVoid bool) Tag {
 	return func(children ...View) View {
 		node := &Node{
-			Type: Element,
-			Tag:  tag,
-			Children: make([]*Node, 0),
-			Atts: make([]*Node, 0),
-			IsVoid: isVoid,
+			Type:       Element,
+			Tag:        tag,
+			Children:   make([]*Node, 0),
+			Attributes: make([]*Node, 0),
+			IsVoid:     isVoid,
 		}
 		node.Add(children...)
 		return node
+	}
+}
+
+// Atts creates a tag with the given pairs of Attributes.
+func (t Tag) Atts(pairs ...string) Tag {
+	return func(views ...View) View {
+		atts := []View { Atts(pairs...) }
+		atts = append(atts, views...)
+		return t(atts...)
 	}
 }
 
@@ -21,7 +33,7 @@ func el(tag string, isVoid bool) Tag {
 // given strings as Text nodes.
 func (t Tag) Text(c ...string) View {
 	e := t().ToNode()
-	for _,txt := range c {
+	for _, txt := range c {
 		e.Add(Text(txt))
 	}
 	return e

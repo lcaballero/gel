@@ -1,7 +1,5 @@
 package gel
 
-
-
 // Views represent a list of views that can be rendered as a one View.
 type Views interface {
 	Viewable
@@ -44,7 +42,6 @@ func (v Fragment) Len() int {
 	return len(v.views)
 }
 
-
 // Viewable is the interface for anything that can be rendered into a View.
 type Viewable interface {
 	ToView() View
@@ -73,4 +70,3 @@ type ToNode func() *Node
 func (t ToNode) ToNode() *Node {
 	return t()
 }
-

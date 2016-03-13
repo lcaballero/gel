@@ -15,14 +15,14 @@ import (
 // Fragments can have children of type Text and Element, while all other
 // fields are empty or nil.
 type Node struct {
-	Tag      string
-	Children []*Node
-	Atts     []*Node
-	Type     Type
-	Key      string
-	Value    string
-	CData    string
-	IsVoid   bool
+	Tag        string
+	Children   []*Node
+	Attributes []*Node
+	Type       Type
+	Key        string
+	Value      string
+	CData      string
+	IsVoid     bool
 }
 
 // WriteTo will output the Node to the writer correctly nesting children and
@@ -57,8 +57,12 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 		w.Write([]byte("=\""))
 		w.Write([]byte(e.Value))
 		w.Write([]byte("\""))
+	case AttributeList:
+		for _,at := range e.Children {
+			at.WriteToIndented(in, w)
+		}
 	case NodeList:
-		for _,f := range e.Children {
+		for _, f := range e.Children {
 			f.WriteToIndented(in, w)
 		}
 	case Element:
@@ -67,8 +71,8 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 		}
 		w.Write([]byte("<"))
 		w.Write([]byte(e.Tag))
-		if len(e.Atts) > 0 {
-			for _, att := range e.Atts {
+		if len(e.Attributes) > 0 {
+			for _, att := range e.Attributes {
 				att.WriteTo(w)
 			}
 		}
@@ -110,19 +114,29 @@ func (e *Node) String() string {
 // added to the Atts slice.  If the Node is not an Element then
 // attributes will silently be ignored.
 func (v *Node) Add(nodes ...View) View {
-	node := v.ToNode()
+	dest := v.ToNode()
 	for _, view := range nodes {
-		n := view.ToNode()
-		switch n.Type {
+		src := view.ToNode()
+		switch src.Type {
 		case Textual, Element, NodeList:
-			node.Children = append(node.Children, n)
+			dest.Children = append(dest.Children, src)
 		case Attribute:
-			if node.Type == Element {
-				node.Atts = append(node.Atts, n)
+			switch dest.Type {
+			case Element:
+				dest.Attributes = append(dest.Attributes, src)
+			case AttributeList:
+				dest.Children = append(dest.Children, src)
+			}
+		case AttributeList:
+			switch dest.Type {
+			case Element:
+				dest.Attributes = append(dest.Attributes, src.Children...)
+			case AttributeList:
+				dest.Children = append(dest.Children, src.Children...)
 			}
 		}
 	}
-	return node
+	return dest
 }
 
 // Text adds the given strings as text nodes.
@@ -139,6 +153,18 @@ func Att(key, value string) View {
 		Type:  Attribute,
 		Key:   key,
 		Value: value,
+	}
+	return node
+}
+
+// Atts attempts to pair up parameters and make an AttributeList.
+func Atts(pairs ...string) View {
+	node := &Node{
+		Type:     AttributeList,
+		Children: make([]*Node, 0),
+	}
+	for i := 0; (i+1) < len(pairs); i += 2 {
+		node.Children = append(node.Children, Att(pairs[i], pairs[i+1]).ToNode())
 	}
 	return node
 }
@@ -162,7 +188,7 @@ func Fmt(format string, args ...interface{}) View {
 // element.
 func Frag(children ...View) View {
 	n := &Node{
-		Type: NodeList,
+		Type:     NodeList,
 		Children: make([]*Node, 0),
 	}
 	return n.Add(children...)

@@ -3,11 +3,52 @@ package gel
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
 	"bytes"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGel(t *testing.T) {
+
+	Convey(`Adding an Attribute to AttributeList should add children to the Attribute`, t, func() {
+		at := Div.Atts("class", "row", "id", "id-1")().ToNode()
+		So(at.Attributes, ShouldHaveLength, 2)
+		So(at.String(), ShouldEqual, `<div class="row" id="id-1"></div>`)
+	})
+
+	Convey(`Adding an Attribute to AttributeList should add children to the Attribute`, t, func() {
+		at := Atts("class", "row", "id", "id-1").ToNode()
+		So(at.Children, ShouldHaveLength, 2)
+		at.Add(Att("type", "text"))
+		So(at.Children, ShouldHaveLength, 3)
+		So(at.String(), ShouldEqual, ` class="row" id="id-1" type="text"`)
+	})
+
+	Convey(`Adding an AttributeList to an Element should add the lists children to Elements atts`, t, func() {
+		at := Atts("class", "row", "id", "id-1").ToNode()
+		So(at.Children, ShouldHaveLength, 2)
+		So(at.String(), ShouldEqual, ` class="row" id="id-1"`)
+	})
+
+	Convey(`Adding an AttributeList to an Element should add the lists children to Elements atts`, t, func() {
+		at := Atts("class", "row")
+		d := Div(at).ToNode()
+		So(d.Attributes, ShouldHaveLength, 1)
+		So(d.String(), ShouldEqual, `<div class="row"></div>`)
+	})
+
+	Convey(`An attribute list can only have children but no other node fields`, t, func() {
+		list := Atts().ToNode()
+		So(list.Children, ShouldNotBeNil)
+		So(len(list.Children), ShouldEqual, 0)
+		So(list.CData, ShouldBeEmpty)
+		So(list.Attributes, ShouldBeEmpty)
+		So(list.Key, ShouldBeEmpty)
+		So(list.Value, ShouldBeEmpty)
+		So(list.Tag, ShouldEqual, "")
+		So(list.Type, ShouldEqual, AttributeList)
+		So(list.String(), ShouldBeEmpty)
+	})
 
 	Convey(`A Views list should properly render to html like any fragment`, t, func() {
 		v := NewFragment()
@@ -31,7 +72,7 @@ func TestGel(t *testing.T) {
 
 	Convey(`A None node should be an empty Text *Node`, t, func() {
 		none := None().ToNode()
-		So(none.Atts, ShouldBeNil)
+		So(none.Attributes, ShouldBeNil)
 		So(none.CData, ShouldBeEmpty)
 		So(none.Children, ShouldBeEmpty)
 		So(none.Key, ShouldBeEmpty)
@@ -74,13 +115,13 @@ func TestGel(t *testing.T) {
 	Convey(`Add should silently ignore Atts for non-element Nodes`, t, func() {
 		txt := Text("Hello, World!").ToNode()
 		txt.Add(Att("id", "my-id"))
-		So(txt.Atts, ShouldBeNil)
+		So(txt.Attributes, ShouldBeNil)
 
 		frag := Frag(Att("href", "/")).ToNode()
-		So(frag.Atts, ShouldBeNil)
+		So(frag.Attributes, ShouldBeNil)
 
 		atts := Att("src", "favicon.ico").ToNode().Add(Att("id", "id-1")).ToNode()
-		So(atts.Atts, ShouldBeNil)
+		So(atts.Attributes, ShouldBeNil)
 	})
 
 	Convey(`When using Tag.Text and adding strings to a Node they will be appended as text nodes`, t, func() {
@@ -134,7 +175,7 @@ func TestGel(t *testing.T) {
 		So(f.String(), ShouldEqual, ``)
 		So(f.Type, ShouldEqual, NodeList)
 		So(f.Children, ShouldNotBeNil)
-		So(f.Atts, ShouldBeNil)
+		So(f.Attributes, ShouldBeNil)
 		So(len(f.Children), ShouldEqual, 0)
 		So(f.Key, ShouldEqual, "")
 		So(f.Value, ShouldEqual, "")
@@ -146,9 +187,9 @@ func TestGel(t *testing.T) {
 		So(d.String(), ShouldEqual, ` class="container"`)
 		So(d.Type, ShouldEqual, Attribute)
 		So(d.Children, ShouldBeNil)
-		So(d.Atts, ShouldBeNil)
+		So(d.Attributes, ShouldBeNil)
 		So(len(d.Children), ShouldEqual, 0)
-		So(len(d.Atts), ShouldEqual, 0)
+		So(len(d.Attributes), ShouldEqual, 0)
 		So(d.Key, ShouldEqual, "class")
 		So(d.Value, ShouldEqual, "container")
 		So(d.CData, ShouldEqual, "")
@@ -159,9 +200,9 @@ func TestGel(t *testing.T) {
 		So(d.String(), ShouldEqual, "<div></div>")
 		So(d.Type, ShouldEqual, Element)
 		So(d.Children, ShouldNotBeNil)
-		So(d.Atts, ShouldNotBeNil)
+		So(d.Attributes, ShouldNotBeNil)
 		So(len(d.Children), ShouldEqual, 0)
-		So(len(d.Atts), ShouldEqual, 0)
+		So(len(d.Attributes), ShouldEqual, 0)
 		So(d.Key, ShouldEqual, "")
 		So(d.Value, ShouldEqual, "")
 		So(d.CData, ShouldEqual, "")
@@ -173,7 +214,7 @@ func TestGel(t *testing.T) {
 		So(s.CData, ShouldEqual, `text`)
 		So(s.Tag, ShouldEqual, "")
 		So(s.Children, ShouldBeNil)
-		So(s.Atts, ShouldBeNil)
+		So(s.Attributes, ShouldBeNil)
 		So(s.Type, ShouldEqual, Textual)
 		So(s.Key, ShouldEqual, "")
 		So(s.Value, ShouldEqual, "")
