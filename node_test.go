@@ -10,6 +10,11 @@ import (
 
 func TestGel(t *testing.T) {
 
+	Convey(`Class(.) should add the class attribute`, t, func() {
+		d := Div.Class("row").Text("Hello, World!")
+		So(d.ToNode().String(), ShouldEqual, `<div class="row">Hello, World!</div>`)
+	})
+
 	Convey(`Adding an Attribute to AttributeList should add children to the Attribute`, t, func() {
 		at := Div.Atts("class", "row", "id", "id-1")().ToNode()
 		So(at.Attributes, ShouldHaveLength, 2)

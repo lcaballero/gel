@@ -20,6 +20,11 @@ func el(tag string, isVoid bool) Tag {
 	}
 }
 
+// Adds the class attribute with the given value
+func (t Tag) Class(class string) Tag {
+	return t.Atts("class", class)
+}
+
 // Atts creates a tag with the given pairs of Attributes.
 func (t Tag) Atts(pairs ...string) Tag {
 	return func(views ...View) View {
