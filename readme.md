@@ -36,7 +36,7 @@ import (
 )  
 
 func main() {
-  el := Div.Atts(class", "container", id", "id-1").Text("text")
+  el := Div.Class("container").Atts("id", "id-1").Text("text")
   html := el.String() // <div class="container", id="id-1">text</div>
   fmt.Println(html)  
 }
