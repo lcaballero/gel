@@ -118,8 +118,10 @@ func (v *Node) Add(nodes ...View) View {
 	for _, view := range nodes {
 		src := view.ToNode()
 		switch src.Type {
-		case Textual, Element, NodeList:
+		case Textual, Element:
 			dest.Children = append(dest.Children, src)
+		case NodeList:
+			dest.Children = append(dest.Children, src.Children...)
 		case Attribute:
 			switch dest.Type {
 			case Element:
