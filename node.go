@@ -58,7 +58,7 @@ func (e *Node) WriteToIndented(in Indent, w io.Writer) {
 		w.Write([]byte(e.Value))
 		w.Write([]byte("\""))
 	case AttributeList:
-		for _,at := range e.Children {
+		for _, at := range e.Children {
 			at.WriteToIndented(in, w)
 		}
 	case NodeList:
@@ -165,7 +165,7 @@ func Atts(pairs ...string) View {
 		Type:     AttributeList,
 		Children: make([]*Node, 0),
 	}
-	for i := 0; (i+1) < len(pairs); i += 2 {
+	for i := 0; (i + 1) < len(pairs); i += 2 {
 		node.Children = append(node.Children, Att(pairs[i], pairs[i+1]).ToNode())
 	}
 	return node

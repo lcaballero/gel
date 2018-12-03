@@ -1,6 +1,7 @@
 package gel
 
 type Tag func(...View) View
+
 func (t Tag) ToNode() *Node {
 	return t().ToNode()
 }
@@ -28,7 +29,7 @@ func (t Tag) Class(class string) Tag {
 // Atts creates a tag with the given pairs of Attributes.
 func (t Tag) Atts(pairs ...string) Tag {
 	return func(views ...View) View {
-		atts := []View { Atts(pairs...) }
+		atts := []View{Atts(pairs...)}
 		atts = append(atts, views...)
 		return t(atts...)
 	}
@@ -42,6 +43,11 @@ func (t Tag) Text(c ...string) View {
 		e.Add(Text(txt))
 	}
 	return e
+}
+
+// Add appends the children provided as views to the current tag.
+func (t Tag) Add(children ...View) View {
+	return t().ToNode().Add(children...)
 }
 
 // Fmt creates a Text tag using the given format and args like Sprintf.

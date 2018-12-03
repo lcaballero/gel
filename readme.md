@@ -7,12 +7,12 @@
 # Why?  What in the...F?
 
 Let's just say sometimes you don't want to deal with template engines.
-You don't want a build system that transpiles one language into another,
-just for the sake of brevity... not to mention you have to learn the
-language and nuance of that new language or templating thing.  You
-have to `npm install` 42 things, and then `bower install` something
-else, or `grunt` this or that, or `gem` this or that, or get some
-`pip`, or wget a shell script you won't vet before running, which
+You don't want a build system that transpiles one language into
+another, just for the sake of brevity... not to mention you have to
+learn the language and nuance of that new language or templating
+thing.  You have to `npm install` 42 things, and then `bower install`
+something else, or `grunt` this or that, or `gem` this or that, or get
+some `pip`, or wget a shell script you won't vet before running, which
 install who knows what.
 
 But why?  Why?  You just need to generate a byte stream (hell a string).

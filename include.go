@@ -10,13 +10,13 @@ type FileReader func(string) ([]byte, error)
 
 type Inserter struct {
 	resolver Resolver
-	reader FileReader
+	reader   FileReader
 }
 
 func NewInserter(res Resolver, reader FileReader) Inserter {
 	return Inserter{
 		resolver: res,
-		reader: reader,
+		reader:   reader,
 	}
 }
 
