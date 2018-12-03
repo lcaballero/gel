@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/lcaballero/gel.svg?branch=master)](https://travis-ci.org/lcaballero/gel)
-
 * Introduction
 `gel` is a lib for programmatically producing Html.
 
@@ -47,7 +45,6 @@ a million ways of rendering text.
    an attribute list, which will be a new Type much like fragment.
 
 ** License
-
 See license file.
 
 The use and distribution terms for this software are covered by the
@@ -55,6 +52,5 @@ The use and distribution terms for this software are covered by the
 root of this distribution. By using this software in any fashion, you are
 agreeing to be bound by the terms of this license. You must not remove this
 notice, or any other, from this software.
-
 
 [EPL-1]: http://opensource.org/licenses/eclipse-1.0.txt
