@@ -1,11 +1,9 @@
 [![Build Status](https://travis-ci.org/lcaballero/gel.svg?branch=master)](https://travis-ci.org/lcaballero/gel)
 
-# Introduction
-
+* Introduction
 `gel` is a lib for programmatically producing Html.
 
-# Why?  What in the...F?
-
+** Why?  What in the...F?
 Let's just say sometimes you don't want to deal with template engines.
 You don't want a build system that transpiles one language into
 another, just for the sake of brevity... not to mention you have to
@@ -24,26 +22,23 @@ from inside of Go, and without some templating engine.
 Is it a silver bullet -- nope.  Never said it was.  It's just one of
 a million ways of rendering text.
 
+** Usage
+#+BEGIN_SRC go
+  package main
 
-## Usage
+  import (
+	  . "github.com/lcaballero/gel"
+	  "fmt"
+  )  
 
-```go
+  func main() {
+	  el := Div.Class("container").Atts("id", "id-1").Text("text")
+	  html := el.String() // <div class="container", id="id-1">text</div>
+	  fmt.Println(html)  
+  }
+#+END_SRC
 
-package main
-import (
-  . "github.com/lcaballero/gel"
-  "fmt"
-)  
-
-func main() {
-  el := Div.Class("container").Atts("id", "id-1").Text("text")
-  html := el.String() // <div class="container", id="id-1">text</div>
-  fmt.Println(html)  
-}
-
-```
-
-## TODO:
+** TODO:
 1. Need more examples... possibly even Go examples.
 1. Add a Class(s string) top-level function and Tag member.
 1. Convert Tags to functions where by they return the `*Node` such that
@@ -51,7 +46,7 @@ func main() {
 1. Add an Atts (plural) top-level, Node member and Tag member that makes
    an attribute list, which will be a new Type much like fragment.
 
-## License
+** License
 
 See license file.
 
