@@ -115,9 +115,9 @@ package gel
 
 var (
   // Normal tags requiring closing tag.
-  {{ range .normal }}{{ . }} Tag = el("{{ . | lower }}", false)
+  {{ range .normal }}{{ . }} Tag = El("{{ . | lower }}", false)
   {{ end }}
   // Void elements that must be self closed.
-  {{ range .void }}{{ . }} Tag = el("{{ . | lower }}", true)
+  {{ range .void }}{{ . }} Tag = El("{{ . | lower }}", true)
   {{ end }}
 )
