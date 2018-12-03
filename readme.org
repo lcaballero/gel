@@ -1,14 +1,14 @@
 * Introduction
-`gel` is a lib for programmatically producing Html.
+=gel= is a lib for programmatically producing Html.
 
 ** Why?  What in the...F?
 Let's just say sometimes you don't want to deal with template engines.
 You don't want a build system that transpiles one language into
 another, just for the sake of brevity... not to mention you have to
 learn the language and nuance of that new language or templating
-thing.  You have to `npm install` 42 things, and then `bower install`
-something else, or `grunt` this or that, or `gem` this or that, or get
-some `pip`, or wget a shell script you won't vet before running, which
+thing.  You have to =npm install= 42 things, and then =bower install=
+something else, or =grunt= this or that, or =gem= this or that, or get
+some =pip=, or wget a shell script you won't vet before running, which
 install who knows what.
 
 But why?  Why?  You just need to generate a byte stream (hell a string).
@@ -39,7 +39,7 @@ a million ways of rendering text.
 ** TODO:
 1. Need more examples... possibly even Go examples.
 1. Add a Class(s string) top-level function and Tag member.
-1. Convert Tags to functions where by they return the `*Node` such that
+1. Convert Tags to functions where by they return the =*Node= such that
    there's no longer a need for the Add(...) or New(...) methods.
 1. Add an Atts (plural) top-level, Node member and Tag member that makes
    an attribute list, which will be a new Type much like fragment.
