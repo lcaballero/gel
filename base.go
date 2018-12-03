@@ -1,13 +1,20 @@
 package gel
 
+// Tag is the starting point of an element.
 type Tag func(...View) View
 
+// ToNode renders the Tag as a Node.
 func (t Tag) ToNode() *Node {
 	return t().ToNode()
 }
 
-// el creates a Tag func for the given tag name and isVoid flag.
-func el(tag string, isVoid bool) Tag {
+// E creates an element that can hold children.
+func E(tag string) Tag {
+	return El(tag, false)
+}
+
+// El creates a Tag func for the given tag name and isVoid flag.
+func El(tag string, isVoid bool) Tag {
 	return func(children ...View) View {
 		node := &Node{
 			Type:       Element,
