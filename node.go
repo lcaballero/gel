@@ -205,6 +205,7 @@ func None() View {
 // a View based on the val, but if it's none of these then it returns
 // an empty Text node.
 func Maybe(val interface{}) View {
+	fmt.Println("1")
 	if val == nil {
 		return None()
 	}
@@ -216,6 +217,11 @@ func Maybe(val interface{}) View {
 	if ok {
 		return view
 	}
+	s, ok := val.(string)
+	if ok {
+		fmt.Println("2")
+		return Text(s)
+	}
 	return None()
 }
 
@@ -224,14 +230,17 @@ func Maybe(val interface{}) View {
 // so in cases where the first is nil, the second will be used if possible.
 // Should they both be nil the View will be of an empty Text node.
 func Default(val interface{}, def interface{}) View {
+	fmt.Println("3")
 	if val == nil {
-		return None()
+		return Maybe(def)
 	}
 	viewable, ok := val.(Viewable)
+	fmt.Println("4", viewable, ok)
 	if ok {
 		return viewable.ToView()
 	}
 	view, ok := val.(View)
+	fmt.Println("5", view, ok)
 	if ok {
 		return view
 	}
