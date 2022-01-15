@@ -205,7 +205,6 @@ func None() View {
 // a View based on the val, but if it's none of these then it returns
 // an empty Text node.
 func Maybe(val interface{}) View {
-	fmt.Println("1")
 	if val == nil {
 		return None()
 	}
@@ -219,28 +218,24 @@ func Maybe(val interface{}) View {
 	}
 	s, ok := val.(string)
 	if ok {
-		fmt.Println("2")
 		return Text(s)
 	}
 	return None()
 }
 
-// Default takes two values, should the first be unconvertible to a Viewable
+// Def takes two values, should the first be unconvertible to a Viewable
 // or a view it will then attempt to convert the second.  Nil is not convertible
 // so in cases where the first is nil, the second will be used if possible.
 // Should they both be nil the View will be of an empty Text node.
-func Default(val interface{}, def interface{}) View {
-	fmt.Println("3")
+func Def(val interface{}, def interface{}) View {
 	if val == nil {
 		return Maybe(def)
 	}
 	viewable, ok := val.(Viewable)
-	fmt.Println("4", viewable, ok)
 	if ok {
 		return viewable.ToView()
 	}
 	view, ok := val.(View)
-	fmt.Println("5", view, ok)
 	if ok {
 		return view
 	}
