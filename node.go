@@ -216,16 +216,20 @@ func Maybe(val interface{}) View {
 	if ok {
 		return view
 	}
+	s, ok := val.(string)
+	if ok {
+		return Text(s)
+	}
 	return None()
 }
 
-// Default takes two values, should the first be unconvertible to a Viewable
+// Def takes two values, should the first be unconvertible to a Viewable
 // or a view it will then attempt to convert the second.  Nil is not convertible
 // so in cases where the first is nil, the second will be used if possible.
 // Should they both be nil the View will be of an empty Text node.
-func Default(val interface{}, def interface{}) View {
+func Def(val interface{}, def interface{}) View {
 	if val == nil {
-		return None()
+		return Maybe(def)
 	}
 	viewable, ok := val.(Viewable)
 	if ok {

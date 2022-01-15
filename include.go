@@ -1,4 +1,4 @@
-package gel
+package gel // import "github.com/lcaballero/gel"
 
 import (
 	"log"
