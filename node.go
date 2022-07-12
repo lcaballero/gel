@@ -231,6 +231,10 @@ func Def(val interface{}, def interface{}) View {
 	if val == nil {
 		return Maybe(def)
 	}
+	str, ok := val.(string)
+	if ok {
+		return Text(str)
+	}
 	viewable, ok := val.(Viewable)
 	if ok {
 		return viewable.ToView()
