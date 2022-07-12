@@ -6,9 +6,18 @@ import (
 	"io"
 )
 
-const DefaultLevel = 0
-const DefaultIncrement = 1
-const DefaultTab = "  "
+const (
+	// DefaultLevel starts indent at column 0 without any indention
+	DefaultLevel = 0
+
+	// DefaultIncrement is 1 meaning each indention is a single set of
+	// indention strings
+	DefaultIncrement = 1
+
+	// DefaultTab is 2 spaces multiplied by the Increment that is
+	// typically 1
+	DefaultTab = "  "
+)
 
 // Indent represents indention at a given level.
 type Indent struct {

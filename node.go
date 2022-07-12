@@ -39,65 +39,66 @@ func (e *Node) ToNode() *Node {
 }
 
 // WriteTo writes the Node to the given writer with the given indention.
-func (e *Node) WriteToIndented(in Indent, w io.Writer) {
+func (e *Node) WriteToIndented(in Indent, writer io.Writer) {
+	w := Writer{writer}
 	switch e.Type {
 	case Textual:
 		if in.HasIndent() && e.CData != "" {
-			in.WriteTo(w)
+			in.WriteTo(w.Writer)
 		}
 		if e.CData != "" {
-			w.Write([]byte(e.CData))
+			w.Write(e.CData)
 		}
 		if in.HasIndent() && e.CData != "" {
-			w.Write([]byte("\n"))
+			w.Write("\n")
 		}
 	case Attribute:
-		w.Write([]byte(" "))
-		w.Write([]byte(e.Key))
-		w.Write([]byte("=\""))
-		w.Write([]byte(e.Value))
-		w.Write([]byte("\""))
+		w.Write(" ")
+		w.Write(e.Key)
+		w.Write("=\"")
+		w.Write(e.Value)
+		w.Write("\"")
 	case AttributeList:
 		for _, at := range e.Children {
-			at.WriteToIndented(in, w)
+			at.WriteToIndented(in, w.Writer)
 		}
 	case NodeList:
 		for _, f := range e.Children {
-			f.WriteToIndented(in, w)
+			f.WriteToIndented(in, w.Writer)
 		}
 	case Element:
 		if in.HasIndent() {
-			in.WriteTo(w)
+			in.WriteTo(w.Writer)
 		}
-		w.Write([]byte("<"))
-		w.Write([]byte(e.Tag))
+		w.Write("<")
+		w.Write(e.Tag)
 		if len(e.Attributes) > 0 {
 			for _, att := range e.Attributes {
-				att.WriteTo(w)
+				att.WriteTo(w.Writer)
 			}
 		}
 		if e.IsVoid {
-			w.Write([]byte("/>"))
+			w.Write("/>")
 		} else {
-			w.Write([]byte(">"))
+			w.Write(">")
 			if len(e.Children) > 0 {
 				if in.HasIndent() {
-					w.Write([]byte("\n"))
+					w.Write("\n")
 				}
 				next := in.Incr()
 				for _, kid := range e.Children {
-					kid.WriteToIndented(next, w)
+					kid.WriteToIndented(next, w.Writer)
 				}
 			}
 		}
 		if in.Level > 0 && in.HasIndent() && len(e.Children) > 0 {
-			in.WriteTo(w)
+			in.WriteTo(w.Writer)
 		}
 		if !e.IsVoid {
-			w.Write([]byte(fmt.Sprintf("</%s>", e.Tag)))
+			w.Write(fmt.Sprintf("</%s>", e.Tag))
 		}
 		if in.Level > 0 {
-			w.Write([]byte("\n"))
+			w.Write("\n")
 		}
 	}
 }
