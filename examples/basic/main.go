@@ -30,7 +30,7 @@ func DemoDoc() {
 }
 
 func BreadCrumbComponent(items ...string) View {
-	f := Frag()
+	f := Fragment{}
 	for _, s := range items {
 		f = f.Add(
 			A.Atts("href", "/"+s).Text(s),

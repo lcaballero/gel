@@ -3,18 +3,6 @@ package gel
 // Fragment is the concrete type of the Views interface.
 type Fragment []View
 
-// Frag creates a view that is a list of children views without a
-// containing element.
-func Frag(children ...View) Fragment {
-	return children
-}
-
-// NewViews allocates an empty views list to which move views can be
-// added.
-func NewFragment() Fragment {
-	return Fragment{}
-}
-
 // Add appends the given views to the currently established list of
 // views.
 func (v Fragment) Add(views ...View) Fragment {

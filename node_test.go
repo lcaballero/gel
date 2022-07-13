@@ -76,7 +76,7 @@ func TestNode(t *testing.T) {
 		{
 			name: `A Fragment node should have propery fields set`,
 			view: func() *Node {
-				return Frag().ToNode()
+				return Fragment{}.ToNode()
 			},
 			wantType: NodeList,
 		},
@@ -176,9 +176,10 @@ func TestNode(t *testing.T) {
 		{
 			name: `NodeList.Add(...) adds the children`,
 			view: func() *Node {
-				return Frag(Div(), Div()).ToNode().Add(
-					Frag(Div(), Div()),
-					Frag(Div(), Div()),
+				f := Fragment{Div(), Div()}
+				return f.ToNode().Add(
+					Fragment{Div(), Div()},
+					Fragment{Div(), Div()},
 				).ToNode()
 			},
 			wantType:      NodeList,
@@ -216,13 +217,13 @@ func TestFragment(t *testing.T) {
 			name:    `Adding to a Views list should increase it's length`,
 			wantLen: 0,
 			view: func() Fragment {
-				return NewFragment()
+				return Fragment{}
 			},
 		},
 		{
 			name: "fragment should have 1 child",
 			view: func() Fragment {
-				v := NewFragment()
+				v := Fragment{}
 				v = v.Add(Div.Text("a"))
 				return v
 			},
@@ -263,7 +264,7 @@ func TestGel(t *testing.T) {
 		{
 			name: `A Views list should properly render to html like any fragment`,
 			view: func() *Node {
-				v := NewFragment()
+				v := Fragment{}
 				v = v.Add(
 					Div.Text("a"),
 					Div.Text("b"),
@@ -353,7 +354,7 @@ func TestGel(t *testing.T) {
 		{
 			name: `empty text should NOT be added to a div which is already (especially with indented)`,
 			view: func() *Node {
-				fr := Frag(
+				fr := Fragment{
 					Div(
 						Div(
 							Text("2nd level"),
@@ -362,7 +363,7 @@ func TestGel(t *testing.T) {
 							Text(""),
 						),
 					),
-				)
+				}
 				return fr.ToNode()
 			},
 			wantHtml: `<div><div>2nd level</div><div></div></div>`,
@@ -370,7 +371,7 @@ func TestGel(t *testing.T) {
 		{
 			name: `A new fragment with text and divs should properly render`,
 			view: func() *Node {
-				fr := Frag(
+				fr := Fragment{
 					Div(
 						Text("Here"),
 						Div.Text("See"),
@@ -379,7 +380,7 @@ func TestGel(t *testing.T) {
 						Text("Freedom"),
 					),
 					Text("All"),
-				)
+				}
 				return fr.ToNode()
 			},
 			wantHtml: `<div>Here<div>See</div></div><div>Freedom</div>All`,
