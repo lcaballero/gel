@@ -208,21 +208,22 @@ func TestNode(t *testing.T) {
 
 func TestFragment(t *testing.T) {
 	cases := []struct {
-		view    func() *Fragment
+		view    func() Fragment
 		name    string
 		wantLen int
 	}{
 		{
 			name:    `Adding to a Views list should increase it's length`,
 			wantLen: 0,
-			view: func() *Fragment {
+			view: func() Fragment {
 				return NewFragment()
 			},
 		},
 		{
-			view: func() *Fragment {
+			name: "fragment should have 1 child",
+			view: func() Fragment {
 				v := NewFragment()
-				v.Add(Div.Text("a"))
+				v = v.Add(Div.Text("a"))
 				return v
 			},
 			wantLen: 1,
@@ -263,7 +264,7 @@ func TestGel(t *testing.T) {
 			name: `A Views list should properly render to html like any fragment`,
 			view: func() *Node {
 				v := NewFragment()
-				v.Add(
+				v = v.Add(
 					Div.Text("a"),
 					Div.Text("b"),
 					Div.Text("c"),

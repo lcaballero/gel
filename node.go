@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 )
 
 // Nodes represent the different parts of of Html as one type.  A single Node
@@ -23,6 +24,11 @@ type Node struct {
 	Value      string
 	CData      string
 	IsVoid     bool
+}
+
+// Println will outputs the Node to Stdout using standard indention
+func (e *Node) Println() {
+	e.WriteWithIndention(Indent{}, os.Stdout)
 }
 
 // WriteTo will output the Node to the writer correctly nesting children and
