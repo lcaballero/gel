@@ -5,11 +5,11 @@ build() {
     go install
 }
 
-test::all() {
+tests() {
     go test -v ./...
 }
 
-tests() {
+test::one() {
     go test -v -run TestIndent
 }
 

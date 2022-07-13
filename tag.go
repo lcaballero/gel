@@ -1,13 +1,5 @@
 package gel
 
-// Tag is the starting point of an element.
-type Tag func(...View) View
-
-// ToNode renders the Tag as a Node.
-func (t Tag) ToNode() *Node {
-	return t().ToNode()
-}
-
 // E creates an element that can hold children.
 func E(tag string) Tag {
 	return El(tag, false)
@@ -26,6 +18,14 @@ func El(tag string, isVoid bool) Tag {
 		node.Add(children...)
 		return node
 	}
+}
+
+// Tag is the starting point of an element.
+type Tag func(...View) View
+
+// ToNode renders the Tag as a Node.
+func (t Tag) ToNode() *Node {
+	return t().ToNode()
 }
 
 // Adds the class attribute with the given value

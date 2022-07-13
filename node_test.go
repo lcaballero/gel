@@ -74,18 +74,21 @@ func TestNode(t *testing.T) {
 				// So(list.Type, ShouldEqual, AttributeList)
 				return Atts().ToNode()
 			},
+			wantType: AttributeList,
 		},
 		{
 			name: `A None node should be an empty Text *Node`,
 			view: func() *Node {
 				return None().ToNode()
 			},
+			wantType: Textual,
 		},
 		{
 			name: `A Fragment node should have propery fields set`,
 			view: func() *Node {
 				return Frag().ToNode()
 			},
+			wantType: NodeList,
 		},
 	}
 	for _, tc := range cases {
@@ -99,8 +102,8 @@ func TestNode(t *testing.T) {
 			}
 			assert.Equal(t, tc.wantCData, node.CData)
 			assert.Equal(t, tc.wantAttsCount, len(node.Attributes))
-			assert.Equal(t, tc.wantKey, len(node.Key))
-			assert.Equal(t, tc.wantValue, len(node.Value))
+			assert.Equal(t, tc.wantKey, node.Key)
+			assert.Equal(t, tc.wantValue, node.Value)
 			assert.Equal(t, tc.wantType, node.Type)
 		})
 	}
