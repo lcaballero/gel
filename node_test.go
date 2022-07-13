@@ -1,57 +1,48 @@
 package gel
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNode_WriteToIndented(t *testing.T) {
-	// name: `empty tags shouldn't include whitespace when render with indent`,
-	// view: func() *Node {
-	// }
-	//      buf := bytes.NewBuffer([]byte{})
-	//      Div().ToNode().WriteToIndented(NewIndent().Inc(), buf)
-	//      So(buf.String(), ShouldEqual, "  <div></div>\n")
-	//  })
-
-	//  Convey(`Add should silently ignore Atts for non-element Nodes`, t, func() {
-	//      txt := Text("Hello, World!").ToNode()
-	//      txt.Add(Att("id", "my-id"))
-	//      So(txt.Attributes, ShouldBeNil)
-	//      frag := Frag(Att("href", "/")).ToNode()
-	//      So(frag.Attributes, ShouldBeNil)
-	//      atts := Att("src", "favicon.ico").ToNode().Add(Att("id", "id-1")).ToNode()
-	//      So(atts.Attributes, ShouldBeNil)
-	//  })
-
-	//  Convey(`void tags should not have a closing tag`, t, func() {
-	//      buf := bytes.NewBuffer([]byte{})
-	//      Meta().ToNode().WriteToIndented(NewIndent(), buf)
-	//      So(buf.String(), ShouldEqual, "<meta/>")
-	//  })
-
-	//  Convey(`div using Add(...) many atts should render as <div class="container" id="id-1">text</div>`, t, func() {
-	//      s := Div(
-	//          Att("class", "container"),
-	//          Att("id", "id-1"),
-	//          Text("text"),
-	//          Div(
-	//              Att("class", "row"),
-	//              Text("Hello, World!"),
-	//          ),
-	//      )
-	//      expected := `<div class="container" id="id-1">
-	//   text
-	//   <div class="row">
-	//     Hello, World!
-	//   </div>
-	// </div>`
-	//      buf := bytes.NewBuffer([]byte{})
-	//      s.ToNode().WriteToIndented(NewIndent(), buf)
-	//      actual := buf.String()
-	//      So(actual, ShouldEqual, expected)
-	//  })
+	cases := []struct {
+		view       func() *Node
+		name       string
+		wantString string
+	}{
+		{
+			name: `Text node using WriteToIndented`,
+			view: func() *Node {
+				return Text("here").ToNode()
+			},
+			wantString: "here\n",
+		},
+		{
+			name: `Div node using WriteToIndented`,
+			view: func() *Node {
+				return Div.Text("text").ToNode()
+			},
+			wantString: "<div>\n  text\n</div>",
+		},
+		{
+			name: `Div(Div) node using WriteToIndented`,
+			view: func() *Node {
+				return Div.Add(Div.Text("text")).ToNode()
+			},
+			wantString: "<div>\n  <div>\n    text\n  </div>\n</div>",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			node := tc.view()
+			buf := bytes.NewBufferString("")
+			node.WriteToIndented(NewIndent(), buf)
+			assert.Equal(t, tc.wantString, buf.String())
+		})
+	}
 }
 
 func TestNode(t *testing.T) {
@@ -71,7 +62,6 @@ func TestNode(t *testing.T) {
 		{
 			name: `An attribute list can only have children but no other node fields`,
 			view: func() *Node {
-				// So(list.Type, ShouldEqual, AttributeList)
 				return Atts().ToNode()
 			},
 			wantType: AttributeList,
@@ -89,6 +79,113 @@ func TestNode(t *testing.T) {
 				return Frag().ToNode()
 			},
 			wantType: NodeList,
+		},
+		{
+			name: `A Text node should produce only it's given text.`,
+			view: func() *Node {
+				return Text("text").ToNode()
+			},
+			wantString: "text",
+			wantCData:  "text",
+			wantType:   Textual,
+		},
+		{
+			name: `An Element node should only produce html tags`,
+			view: func() *Node {
+				return Div().ToNode()
+			},
+			wantTag:    "div",
+			wantString: `<div></div>`,
+			wantType:   Element,
+		},
+		{
+			name: `An Attribute node should produce (html) attribute pairs`,
+			view: func() *Node {
+				return Att("class", "container").ToNode()
+			},
+			wantType:   Attribute,
+			wantString: ` class="container"`,
+			wantKey:    "class",
+			wantValue:  "container",
+		},
+		{
+			name: `Adding an Attribute to AttributeList should add children to the Attribute pairs`,
+			view: func() *Node {
+				return Atts("class", "row", "id", "id-1").ToNode().
+					Add(Att("type", "text")).ToNode()
+			},
+			wantType:     AttributeList,
+			wantString:   ` class="row" id="id-1" type="text"`,
+			wantKidCount: 3,
+		},
+		{
+			name: `Output self-closing element`,
+			view: func() *Node {
+				return Img.Atts("href", "/img.png").ToNode()
+			},
+			wantType:      Element,
+			wantString:    `<img href="/img.png"/>`,
+			wantKidCount:  0,
+			wantAttsCount: 1,
+			wantTag:       "img",
+		},
+		{
+			name: `Accept multiple strings for Text node`,
+			view: func() *Node {
+				return Div().ToNode().Text("a", "b", " ", "x", "z").ToNode()
+			},
+			wantType:     Element,
+			wantString:   `<div>ab xz</div>`,
+			wantKidCount: 5,
+			wantTag:      "div",
+		},
+		{
+			name: `Custom Tag creation`,
+			view: func() *Node {
+				MyDiv := E("MyDiv")
+				return MyDiv.Text("hello").ToNode()
+			},
+			wantType:     Element,
+			wantString:   `<MyDiv>hello</MyDiv>`,
+			wantKidCount: 1,
+			wantTag:      "MyDiv",
+		},
+		{
+			name: `Custom Tag with Add(View...)`,
+			view: func() *Node {
+				MyDiv := E("MyDiv")
+				return MyDiv.Add(Div.Text("my-div")).ToNode()
+			},
+			wantType:     Element,
+			wantString:   `<MyDiv><div>my-div</div></MyDiv>`,
+			wantKidCount: 1,
+			wantTag:      "MyDiv",
+		},
+		{
+			name: `Add an AttributeList to El.Add(Atts(...)...)`,
+			view: func() *Node {
+				return Atts("id", "my-id").ToNode().Add(
+					Atts("class", "container", "onclick", "func()")).ToNode()
+			},
+			wantType:      AttributeList,
+			wantKidCount:  3,
+			wantTag:       "",
+			wantString:    ` id="my-id" class="container" onclick="func()"`,
+			wantAttsCount: 0,
+		},
+		{
+			name: `NodeList.Add(...) adds the children`,
+			view: func() *Node {
+				return Frag(Div(), Div()).ToNode().Add(
+					Frag(Div(), Div()),
+					Frag(Div(), Div()),
+				).ToNode()
+			},
+			wantType:      NodeList,
+			wantKidCount:  6,
+			wantTag:       "",
+			wantString:    `<div></div><div></div><div></div><div></div><div></div><div></div>`,
+			wantAttsCount: 0,
 		},
 	}
 	for _, tc := range cases {
@@ -312,58 +409,4 @@ func TestGel(t *testing.T) {
 			assert.Equal(t, tc.wantAttsCount, len(node.Attributes))
 		})
 	}
-
-	//  Convey(`An Attribute node should html attribute pairs`, t, func() {
-	//      d := Att("class", "container").ToNode()
-	//      So(d.String(), ShouldEqual, ` class="container"`)
-	//      So(d.Type, ShouldEqual, Attribute)
-	//      So(d.Children, ShouldBeNil)
-	//      So(d.Attributes, ShouldBeNil)
-	//      So(len(d.Children), ShouldEqual, 0)
-	//      So(len(d.Attributes), ShouldEqual, 0)
-	//      So(d.Key, ShouldEqual, "class")
-	//      So(d.Value, ShouldEqual, "container")
-	//      So(d.CData, ShouldEqual, "")
-	//  })
-
-	//  Convey(`An Element node should only produce html tags`, t, func() {
-	//      d := Div().ToNode()
-	//      So(d.String(), ShouldEqual, "<div></div>")
-	//      So(d.Type, ShouldEqual, Element)
-	//      So(d.Children, ShouldNotBeNil)
-	//      So(d.Attributes, ShouldNotBeNil)
-	//      So(len(d.Children), ShouldEqual, 0)
-	//      So(len(d.Attributes), ShouldEqual, 0)
-	//      So(d.Key, ShouldEqual, "")
-	//      So(d.Value, ShouldEqual, "")
-	//      So(d.CData, ShouldEqual, "")
-	//  })
-
-	//  Convey(`A Text node should produce only it's given text.`, t, func() {
-	//      s := Text("text").ToNode()
-	//      So(s.String(), ShouldEqual, `text`)
-	//      So(s.CData, ShouldEqual, `text`)
-	//      So(s.Tag, ShouldEqual, "")
-	//      So(s.Children, ShouldBeNil)
-	//      So(s.Attributes, ShouldBeNil)
-	//      So(s.Type, ShouldEqual, Textual)
-	//      So(s.Key, ShouldEqual, "")
-	//      So(s.Value, ShouldEqual, "")
-	//  })
-}
-
-func TestAtts(t *testing.T) {
-	//  Convey(`Adding an Attribute to AttributeList should add children to the Attribute`, t, func() {
-	//      at := Atts("class", "row", "id", "id-1").ToNode()
-	//      So(at.Children, ShouldHaveLength, 2)
-	//      at.Add(Att("type", "text"))
-	//      So(at.Children, ShouldHaveLength, 3)
-	//      So(at.String(), ShouldEqual, ` class="row" id="id-1" type="text"`)
-	//  })
-
-	//  Convey(`Adding an AttributeList to an Element should add the lists children to Elements atts`, t, func() {
-	//      at := Atts("class", "row", "id", "id-1").ToNode()
-	//      So(at.Children, ShouldHaveLength, 2)
-	//      So(at.String(), ShouldEqual, ` class="row" id="id-1"`)
-	//  })
 }

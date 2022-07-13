@@ -41,26 +41,8 @@ func (v Fragment) Len() int {
 	return len(v.views)
 }
 
-// ToView is the functional equivalent of Viewable, which allows an
-// empty function returning a View to be a Viewable.
-type ToView func() View
-
-// ToView method implments the Viewable interface for the ToView func.
-func (v ToView) ToView() View {
-	return v()
-}
-
 // View interface represents anything that can be turned into a Node via the
 // ToNode() function.
 type View interface {
 	ToNode() *Node
-}
-
-// ToNode is an empty function that returns a rendered/completed Node.
-type ToNode func() *Node
-
-// ToNode here implements the View interface, meaning that a ToNode function
-// can now be used like a View.
-func (t ToNode) ToNode() *Node {
-	return t()
 }

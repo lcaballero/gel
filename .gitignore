@@ -39,3 +39,6 @@ files/elasticsearch/
 src/tmp-*
 src/github.com/
 src/golang.org/
+
+cover.html
+cover.out
