@@ -1,15 +1,8 @@
-(defun build/root ()
-  (locate-dominating-file buffer-file-name ".dir-locals.el"))
-
 (defun build/file (name args)
-  (format "%s%s %s" (build/root) name args))
+  (format "%s%s %s" (tools-el/root-of ".dir-locals.el") name args))
 
 (defun build/sh (script func)
   (shell-command (build/file script func)))
-
-(defun build/run-dist ()
-  (interactive)
-  (build/sh "run.sh" "dist"))
 
 (defun build/run-build ()
   (interactive)
@@ -23,6 +16,10 @@
   (interactive)
   (build/sh "run.sh" "tests"))
 
+(defun build/run-cover ()
+  (interactive)
+  (build/sh "run.sh" "cover"))
+
 (defun build/run-lint ()
   (interactive)
   (build/run "run.sh" "lint"))
@@ -31,11 +28,12 @@
   "
 ^Dev Local^
 ---------------------------
-_d_: ./run.sh dist
+_t_: ./run.sh tests
 _b_: ./run.sh build
 _c_: ./run.sh clean
-_t_: ./run.sh tests
+_v_: ./run.sh cover
 _l_: ./run.sh lint
+
 "
   ;; local tooling for ./run.sh functions
   ("d" build/run-dist nil)
@@ -43,6 +41,7 @@ _l_: ./run.sh lint
   ("c" build/run-clean nil)
   ("t" build/run-tests nil)
   ("l" build/run-lint nil)
+  ("v" build/run-cover nil)
 
   ("q" nil "quit" :exit t))
 
