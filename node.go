@@ -85,7 +85,7 @@ func (e *Node) WriteToIndented(in Indent, writer io.Writer) {
 				if in.HasIndent() {
 					w.Write("\n")
 				}
-				next := in.Incr()
+				next := in.Inc()
 				for _, kid := range e.Children {
 					kid.WriteToIndented(next, w.Writer)
 				}
@@ -209,10 +209,6 @@ func Maybe(val interface{}) View {
 	if val == nil {
 		return None()
 	}
-	viewable, ok := val.(Viewable)
-	if ok {
-		return viewable.ToView()
-	}
 	view, ok := val.(View)
 	if ok {
 		return view
@@ -224,21 +220,17 @@ func Maybe(val interface{}) View {
 	return None()
 }
 
-// Def takes two values, should the first be unconvertible to a Viewable
+// Default takes two values, should the first be unconvertible to a Viewable
 // or a view it will then attempt to convert the second.  Nil is not convertible
 // so in cases where the first is nil, the second will be used if possible.
 // Should they both be nil the View will be of an empty Text node.
-func Def(val interface{}, def interface{}) View {
+func Default(val interface{}, def interface{}) View {
 	if val == nil {
 		return Maybe(def)
 	}
 	str, ok := val.(string)
 	if ok {
 		return Text(str)
-	}
-	viewable, ok := val.(Viewable)
-	if ok {
-		return viewable.ToView()
 	}
 	view, ok := val.(View)
 	if ok {
