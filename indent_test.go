@@ -1,10 +1,28 @@
 package gel
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+type WriteError int
+
+func (w WriteError) Write(p []byte) (n int, err error) {
+	return 1, fmt.Errorf("write return error on purposes")
+}
+
+func TestIndent_Panic(t *testing.T) {
+	defer func() {
+		pain := recover()
+		err, ok := pain.(error)
+		assert.True(t, ok)
+		assert.NotNil(t, err)
+	}()
+	indent := Indent{Level: 3, Increment: 1, Tab: "  "}
+	indent.WriteTo(WriteError(0))
+}
 
 func TestIndent_Level(t *testing.T) {
 	cases := []struct {
@@ -35,10 +53,6 @@ func TestIndent_Level(t *testing.T) {
 			indent: func() Indent {
 				indent := NewIndent()
 				return indent
-				//  So(indent.Tab, ShouldEqual, DefaultTab)
-				//  So(indent.Level, ShouldEqual, DefaultLevel)
-				//  So(indent.Inc, ShouldEqual, DefaultIncrement)
-				// })
 			},
 		},
 	}

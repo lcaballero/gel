@@ -39,7 +39,7 @@ func TestNode_WriteToIndented(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			node := tc.view()
 			buf := bytes.NewBufferString("")
-			node.WriteToIndented(NewIndent(), buf)
+			node.WriteWithIndention(NewIndent(), buf)
 			assert.Equal(t, tc.wantString, buf.String())
 		})
 	}

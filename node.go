@@ -28,7 +28,7 @@ type Node struct {
 // WriteTo will output the Node to the writer correctly nesting children and
 // attributes.
 func (e *Node) WriteTo(w io.Writer) {
-	e.WriteToIndented(Indent{}, w)
+	e.WriteWithIndention(Indent{}, w)
 }
 
 // ToNode is implemented to conform to a component pattern of Nodes within
@@ -39,7 +39,7 @@ func (e *Node) ToNode() *Node {
 }
 
 // WriteTo writes the Node to the given writer with the given indention.
-func (e *Node) WriteToIndented(in Indent, writer io.Writer) {
+func (e *Node) WriteWithIndention(in Indent, writer io.Writer) {
 	w := Writer{writer}
 	switch e.Type {
 	case Textual:
@@ -60,11 +60,11 @@ func (e *Node) WriteToIndented(in Indent, writer io.Writer) {
 		w.Write("\"")
 	case AttributeList:
 		for _, at := range e.Children {
-			at.WriteToIndented(in, w.Writer)
+			at.WriteWithIndention(in, w.Writer)
 		}
 	case NodeList:
 		for _, f := range e.Children {
-			f.WriteToIndented(in, w.Writer)
+			f.WriteWithIndention(in, w.Writer)
 		}
 	case Element:
 		if in.HasIndent() {
@@ -87,7 +87,7 @@ func (e *Node) WriteToIndented(in Indent, writer io.Writer) {
 				}
 				next := in.Inc()
 				for _, kid := range e.Children {
-					kid.WriteToIndented(next, w.Writer)
+					kid.WriteWithIndention(next, w.Writer)
 				}
 			}
 		}
@@ -185,14 +185,4 @@ func Text(c string) View {
 func Fmt(format string, args ...interface{}) View {
 	s := fmt.Sprintf(format, args...)
 	return Text(s)
-}
-
-// Frag creates a view that is a list of children views without a containing
-// element.
-func Frag(children ...View) View {
-	n := &Node{
-		Type:     NodeList,
-		Children: make([]*Node, 0),
-	}
-	return n.Add(children...)
 }

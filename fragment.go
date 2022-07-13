@@ -5,6 +5,16 @@ type Fragment struct {
 	views []View
 }
 
+// Frag creates a view that is a list of children views without a containing
+// element.
+func Frag(children ...View) View {
+	n := &Node{
+		Type:     NodeList,
+		Children: make([]*Node, 0),
+	}
+	return n.Add(children...)
+}
+
 // NewViews allocates an empty views list to which move views can be added.
 func NewFragment() *Fragment {
 	return &Fragment{
