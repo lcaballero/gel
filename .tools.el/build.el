@@ -22,7 +22,11 @@
 
 (defun build/run-lint ()
   (interactive)
-  (build/run "run.sh" "lint"))
+  (build/sh "run.sh" "lint"))
+
+(defun build/run-gen ()
+  (interactive)
+  (build/sh "run.sh" "gen"))
 
 (defhydra build (:color pink :hint nil :exit t)
   "
@@ -31,8 +35,10 @@
 _t_: ./run.sh tests
 _b_: ./run.sh build
 _c_: ./run.sh clean
+
 _v_: ./run.sh cover
 _l_: ./run.sh lint
+_g_: ./run.sh gen
 
 "
   ;; local tooling for ./run.sh functions
@@ -42,6 +48,7 @@ _l_: ./run.sh lint
   ("t" build/run-tests nil)
   ("l" build/run-lint nil)
   ("v" build/run-cover nil)
+  ("g" build/run-gen nil)  
 
   ("q" nil "quit" :exit t))
 

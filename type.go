@@ -1,6 +1,6 @@
 package gel
 
-//go:generate stringer -type=Type
+//go:generate stringer -type=Type type.go
 type Type int
 
 // The types of Node(s)

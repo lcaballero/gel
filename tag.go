@@ -1,5 +1,7 @@
 package gel
 
+//go:generate go run ./cmds/element_funcs.go tags_gen
+
 // E creates an element that can hold children.
 func E(tag string) Tag {
 	return El(tag, false)

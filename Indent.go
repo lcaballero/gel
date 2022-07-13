@@ -52,7 +52,10 @@ func (n Indent) HasIndent() bool {
 // WriteTo outputs the Indent to the Writer.
 func (n Indent) WriteTo(w io.Writer) {
 	for i := 0; i < n.Level; i++ {
-		w.Write([]byte(n.Tab))
+		n, err := w.Write([]byte(n.Tab))
+		if n <= 0 || err != nil {
+			panic(err)
+		}
 	}
 }
 
