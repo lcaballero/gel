@@ -11,11 +11,11 @@ func E(tag string) Tag {
 func El(tag string, isVoid bool) Tag {
 	return func(children ...View) View {
 		node := &Node{
-			Type:       Element,
-			Tag:        tag,
-			Children:   make([]*Node, 0),
-			Attributes: make([]*Node, 0),
-			IsVoid:     isVoid,
+			kind:       Element,
+			tag:        tag,
+			children:   make([]*Node, 0),
+			attributes: make([]*Node, 0),
+			isVoid:     isVoid,
 		}
 		node.Add(children...)
 		return node

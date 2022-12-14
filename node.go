@@ -16,19 +16,19 @@ import (
 // Fragments can have children of type Text and Element, while all other
 // fields are empty or nil.
 type Node struct {
-	Tag        string
-	Children   []*Node
-	Attributes []*Node
-	Type       Type
-	Key        string
-	Value      string
-	CData      string
-	IsVoid     bool
+	tag        string
+	children   []*Node
+	attributes []*Node
+	kind       Type
+	key        string
+	value      string
+	cdata      string
+	isVoid     bool
 }
 
 // Println will outputs the Node to Stdout using standard indention
 func (e *Node) Println() {
-	e.WriteWithIndention(Indent{}, os.Stdout)
+	e.WriteWithIndention(NewIndent(), os.Stdout)
 }
 
 // WriteTo will output the Node to the writer correctly nesting children and
@@ -47,29 +47,29 @@ func (e *Node) ToNode() *Node {
 // WriteTo writes the Node to the given writer with the given indention.
 func (e *Node) WriteWithIndention(in Indent, writer io.Writer) {
 	w := Writer{writer}
-	switch e.Type {
+	switch e.kind {
 	case Textual:
-		if in.HasIndent() && e.CData != "" {
+		if in.HasIndent() && e.cdata != "" {
 			in.WriteTo(w.Writer)
 		}
-		if e.CData != "" {
-			w.Write(e.CData)
+		if e.cdata != "" {
+			w.Write(e.cdata)
 		}
-		if in.HasIndent() && e.CData != "" {
+		if in.HasIndent() && e.cdata != "" {
 			w.Write("\n")
 		}
 	case Attribute:
 		w.Write(" ")
-		w.Write(e.Key)
+		w.Write(e.key)
 		w.Write("=\"")
-		w.Write(e.Value)
+		w.Write(e.value)
 		w.Write("\"")
 	case AttributeList:
-		for _, at := range e.Children {
+		for _, at := range e.children {
 			at.WriteWithIndention(in, w.Writer)
 		}
 	case NodeList:
-		for _, f := range e.Children {
+		for _, f := range e.children {
 			f.WriteWithIndention(in, w.Writer)
 		}
 	case Element:
@@ -77,31 +77,31 @@ func (e *Node) WriteWithIndention(in Indent, writer io.Writer) {
 			in.WriteTo(w.Writer)
 		}
 		w.Write("<")
-		w.Write(e.Tag)
-		if len(e.Attributes) > 0 {
-			for _, att := range e.Attributes {
+		w.Write(e.tag)
+		if len(e.attributes) > 0 {
+			for _, att := range e.attributes {
 				att.WriteTo(w.Writer)
 			}
 		}
-		if e.IsVoid {
+		if e.isVoid {
 			w.Write("/>")
 		} else {
 			w.Write(">")
-			if len(e.Children) > 0 {
+			if len(e.children) > 0 {
 				if in.HasIndent() {
 					w.Write("\n")
 				}
 				next := in.Inc()
-				for _, kid := range e.Children {
+				for _, kid := range e.children {
 					kid.WriteWithIndention(next, w.Writer)
 				}
 			}
 		}
-		if in.Level > 0 && in.HasIndent() && len(e.Children) > 0 {
+		if in.Level > 0 && in.HasIndent() && len(e.children) > 0 {
 			in.WriteTo(w.Writer)
 		}
-		if !e.IsVoid {
-			w.Write(fmt.Sprintf("</%s>", e.Tag))
+		if !e.isVoid {
+			w.Write(fmt.Sprintf("</%s>", e.tag))
 		}
 		if in.Level > 0 {
 			w.Write("\n")
@@ -124,24 +124,24 @@ func (v *Node) Add(nodes ...View) View {
 	dest := v.ToNode()
 	for _, view := range nodes {
 		src := view.ToNode()
-		switch src.Type {
+		switch src.kind {
 		case Textual, Element:
-			dest.Children = append(dest.Children, src)
+			dest.children = append(dest.children, src)
 		case NodeList:
-			dest.Children = append(dest.Children, src.Children...)
+			dest.children = append(dest.children, src.children...)
 		case Attribute:
-			switch dest.Type {
+			switch dest.kind {
 			case Element:
-				dest.Attributes = append(dest.Attributes, src)
+				dest.attributes = append(dest.attributes, src)
 			case AttributeList:
-				dest.Children = append(dest.Children, src)
+				dest.children = append(dest.children, src)
 			}
 		case AttributeList:
-			switch dest.Type {
+			switch dest.kind {
 			case Element:
-				dest.Attributes = append(dest.Attributes, src.Children...)
+				dest.attributes = append(dest.attributes, src.children...)
 			case AttributeList:
-				dest.Children = append(dest.Children, src.Children...)
+				dest.children = append(dest.children, src.children...)
 			}
 		}
 	}
@@ -159,9 +159,9 @@ func (n *Node) Text(ts ...string) View {
 // Att creates a new Node with Attribute type and the given key, value pair.
 func Att(key, value string) View {
 	node := &Node{
-		Type:  Attribute,
-		Key:   key,
-		Value: value,
+		kind:  Attribute,
+		key:   key,
+		value: value,
 	}
 	return node
 }
@@ -169,11 +169,11 @@ func Att(key, value string) View {
 // Atts attempts to pair up parameters and make an AttributeList.
 func Atts(pairs ...string) View {
 	node := &Node{
-		Type:     AttributeList,
-		Children: make([]*Node, 0),
+		kind:     AttributeList,
+		children: make([]*Node, 0),
 	}
 	for i := 0; (i + 1) < len(pairs); i += 2 {
-		node.Children = append(node.Children, Att(pairs[i], pairs[i+1]).ToNode())
+		node.children = append(node.children, Att(pairs[i], pairs[i+1]).ToNode())
 	}
 	return node
 }
@@ -181,8 +181,8 @@ func Atts(pairs ...string) View {
 // Text creates a new Node with Textual type and CData from the provided string.
 func Text(c string) View {
 	node := &Node{
-		Type:  Textual,
-		CData: c,
+		kind:  Textual,
+		cdata: c,
 	}
 	return node
 }

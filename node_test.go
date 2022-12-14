@@ -192,17 +192,17 @@ func TestNode(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			node := tc.view()
-			assert.Equal(t, tc.wantTag, node.Tag)
+			assert.Equal(t, tc.wantTag, node.tag)
 			assert.Equal(t, tc.wantString, node.String())
-			assert.Equal(t, tc.wantKidCount, len(node.Children))
+			assert.Equal(t, tc.wantKidCount, len(node.children))
 			if tc.wantNonNilKids {
-				assert.NotNil(t, node.Children != nil)
+				assert.NotNil(t, node.children != nil)
 			}
-			assert.Equal(t, tc.wantCData, node.CData)
-			assert.Equal(t, tc.wantAttsCount, len(node.Attributes))
-			assert.Equal(t, tc.wantKey, node.Key)
-			assert.Equal(t, tc.wantValue, node.Value)
-			assert.Equal(t, tc.wantType, node.Type)
+			assert.Equal(t, tc.wantCData, node.cdata)
+			assert.Equal(t, tc.wantAttsCount, len(node.attributes))
+			assert.Equal(t, tc.wantKey, node.key)
+			assert.Equal(t, tc.wantValue, node.value)
+			assert.Equal(t, tc.wantType, node.kind)
 		})
 	}
 }
@@ -408,7 +408,7 @@ func TestGel(t *testing.T) {
 			got := node.String()
 			assert.Equal(t, tc.wantHtml, got,
 				"expected: %v, got: %v", tc.wantHtml, got)
-			assert.Equal(t, tc.wantAttsCount, len(node.Attributes))
+			assert.Equal(t, tc.wantAttsCount, len(node.attributes))
 		})
 	}
 }
