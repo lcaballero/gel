@@ -43,7 +43,7 @@ func (n Indent) String() string {
 	return buf.String()
 }
 
-// HasIndent returns true if the Inc is > 0 and Tab != ''.
+// HasIndent returns true if the Inc is > 0 and Tab != ”.
 func (n Indent) HasIndent() bool {
 	noIndent := n.Increment == 0 && n.Tab == ""
 	return !noIndent
@@ -74,7 +74,8 @@ func (n Indent) Dec() Indent {
 		panic(errors.New("Cannot decrement Indent below 0"))
 	}
 	return Indent{
-		Level: n.Level - n.Increment,
-		Tab:   n.Tab,
+		Level:     n.Level - n.Increment,
+		Increment: n.Increment,
+		Tab:       n.Tab,
 	}
 }

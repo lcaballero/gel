@@ -13,8 +13,7 @@ func (v Fragment) Add(views ...View) Fragment {
 // Node fragment instance.
 func (v Fragment) ToNode() *Node {
 	n := &Node{
-		kind:     NodeList,
-		children: []*Node{},
+		kind: NodeList,
 	}
 	return n.Add(v...).ToNode()
 }
